@@ -2,14 +2,12 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Models;
-using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json.Linq;
 using ChartsWebApi.ViewModel;
 using Microsoft.AspNetCore.Cors;
 
 namespace ChartsWebApi.Controllers
 {
-    [Authorize]
     [EnableCors("CorsChartNodeClient")]
     [Route("api/[controller]")]
     public class ValuesController : Controller

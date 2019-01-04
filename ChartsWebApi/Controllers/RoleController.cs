@@ -1,38 +1,43 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using System.Security.Claims;
+using GetPDMObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Repository.Models;
 
 namespace ChartsWebApi.Controllers
 {
+    [Authorize]
     [EnableCors("CorsChartNodeClient")]
     [Route("api/[controller]")]
-    public class ChartsController : Controller
+    [ApiController]
+    public class RoleController : Controller
     {
         // GET api/values
         [HttpGet]
-        public List<Function> Get()
+        public ActionResult Get()
         {
-            ChartDbContext dbcontext = new ChartDbContext();
-            return dbcontext.Functions.ToList();
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized();
+            }
+            IEnumerable<Claim> claims = identity.Claims;
+            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
+            XmlResultUserRole role = PDMUtils.getRole(loginGuid);
+            return Json(role);
         }
 
         // GET api/values/5/index
         [HttpGet("{id}")]
         public ActionResult Get(int id)
         {
-            if(id == 0)
+            if (id == 0)
             {
                 return NoContent();
             }
-            ChartDbContext dbcontext = new ChartDbContext();
-            var model = dbcontext.Functions.Where(f => f.Id == id).SingleOrDefault();
-            if(model == null)
-            {
-                return NoContent();
-            }
-            return Json(model);
+            return NoContent();
         }
 
         // POST api/values

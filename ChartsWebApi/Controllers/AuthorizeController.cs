@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using GetPDMObject;
 
 namespace ChartsWebApi.Controllers
 {
@@ -29,20 +30,30 @@ namespace ChartsWebApi.Controllers
             {
                 return BadRequest();
             }
-            if (!(viewModel.User == "openinfo" && viewModel.Password == "123123"))//判断账号密码是否正确
+            XmlResultUser xmlResultUser = null;
+            try
             {
-                return BadRequest();
+                xmlResultUser = PDMUtils.login(viewModel.User, viewModel.Password, "chpdms");
+            }
+            catch (LoginException ex)
+            {
+                return Content(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);
             }
             var claim = new Claim[]{
-                new Claim(ClaimTypes.Name,"openinfo"),
-                new Claim(ClaimTypes.Role,"admin")
+                new Claim(ClaimTypes.Name, xmlResultUser.username),
+                new Claim(ClaimTypes.NameIdentifier, xmlResultUser.userguid),
+                new Claim(ClaimTypes.Hash, xmlResultUser.loginguid)
             };
             //对称秘钥
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             //签名证书(秘钥，加密算法)
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             //生成token
-            var token = new JwtSecurityToken(_jwtSettings.Issuer, _jwtSettings.Audience, claim, DateTime.Now, DateTime.Now.AddMinutes(30), creds);
+            var token = new JwtSecurityToken(_jwtSettings.Issuer, _jwtSettings.Audience, claim, DateTime.Now, DateTime.Now.AddMinutes(20), creds);
 
             return Ok(new
             {

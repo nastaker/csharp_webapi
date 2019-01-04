@@ -1,38 +1,41 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Repository.Models;
+using GetPDMObject;
 
 namespace ChartsWebApi.Controllers
 {
+    [Authorize]
     [EnableCors("CorsChartNodeClient")]
     [Route("api/[controller]")]
-    public class ChartsController : Controller
+    public class MenuController : Controller
     {
         // GET api/values
         [HttpGet]
-        public List<Function> Get()
+        public ActionResult Get()
         {
-            ChartDbContext dbcontext = new ChartDbContext();
-            return dbcontext.Functions.ToList();
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized();
+            }
+            IEnumerable<Claim> claims = identity.Claims;
+            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
+            List<XmlMenu> menulist = PDMUtils.getMenu(loginGuid);
+            return Json(menulist);
         }
 
         // GET api/values/5/index
         [HttpGet("{id}")]
         public ActionResult Get(int id)
         {
-            if(id == 0)
+            if (id == 0)
             {
                 return NoContent();
             }
-            ChartDbContext dbcontext = new ChartDbContext();
-            var model = dbcontext.Functions.Where(f => f.Id == id).SingleOrDefault();
-            if(model == null)
-            {
-                return NoContent();
-            }
-            return Json(model);
+            return NoContent();
         }
 
         // POST api/values
