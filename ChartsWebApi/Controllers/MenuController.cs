@@ -23,7 +23,7 @@ namespace ChartsWebApi.Controllers
             }
             IEnumerable<Claim> claims = identity.Claims;
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            List<XmlMenu> menulist = PDMUtils.getMenu(loginGuid);
+            List<XmlResultMenu> menulist = PDMUtils.getMenu(loginGuid);
             return Json(menulist);
         }
 

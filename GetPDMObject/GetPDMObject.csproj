@@ -50,6 +50,7 @@
     <Compile Include="PDMUtils.cs" />
     <Compile Include="XmlGet.cs" />
     <Compile Include="XmlResult.cs" />
+    <Compile Include="XmlSet.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OIClass.dll">

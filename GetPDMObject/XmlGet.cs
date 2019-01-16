@@ -20,4 +20,13 @@ namespace GetPDMObject
         [XmlElement("LOGINGUID")]
         public string loginguid { get; set; }
     }
+
+    [XmlRoot(ElementName = "GET")]
+    public class XmlGetForm
+    {
+        [XmlElement("OBJ")]
+        public XmlSetForm obj { get; set; }
+        [XmlElement("LOGINGUID")]
+        public string loginguid { get; set; }
+    }
 }

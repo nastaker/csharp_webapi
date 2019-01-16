@@ -30,7 +30,7 @@ namespace ChartsWebApi.Controllers
             {
                 return BadRequest();
             }
-            XmlResultUser xmlResultUser = null;
+            XmlResultUserLogin xmlResultUser = null;
             try
             {
                 xmlResultUser = PDMUtils.login(viewModel.User, viewModel.Password, "chpdms");
