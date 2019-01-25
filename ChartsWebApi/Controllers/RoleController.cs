@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ChartsWebApi.Controllers
 {
     [Authorize]
-    [EnableCors("CorsChartNodeClient")]
+    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
     public class RoleController : Controller

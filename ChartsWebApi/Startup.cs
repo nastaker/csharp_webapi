@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using ChartsWebApi.Extensions;
 using ChartsWebApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 
 namespace ChartsWebApi
 {
@@ -24,8 +26,11 @@ namespace ChartsWebApi
         {
             services.AddMvc();
             services.AddCors(options =>
-                options.AddPolicy("CorsChartNodeClient", p => p.WithOrigins(Configuration["Cors:Origins:VueChartTest"])
-                .AllowAnyMethod().AllowAnyHeader()));
+                options.AddPolicy("CorsGuowenyan", 
+                p => p.WithOrigins(Configuration["Cors:Origins:Guowenyan"])
+                      .AllowCredentials()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()));
 
 
             //将appsettings.json中的JwtSettings部分的配置读取到JwtSettings中，这是给其他地方用的
@@ -62,8 +67,9 @@ namespace ChartsWebApi
                 app.UseDeveloperExceptionPage();
             }
             app.UseAuthentication();
+            app.UseMiddleware(typeof(ErrorHandlingMiddleware));
+            app.UseCors("CorsGuowenyan");
             app.UseMvc();
-            app.UseCors("CorsChartNodeClient");
         }
     }
 }

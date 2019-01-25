@@ -9,38 +9,20 @@ using Microsoft.AspNetCore.Mvc;
 namespace ChartsWebApi.Controllers
 {
     [Authorize]
-    [EnableCors("CorsChartNodeClient")]
+    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
     public class PageController : Controller
     {
         // GET: api/Page
-        [HttpGet("{type}", Name = "GetPageType")]
-        public ActionResult Get(string type)
+        [HttpGet()]
+        public void Get()
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity == null)
-            {
-                return Unauthorized();
-            }
-            IEnumerable<Claim> claims = identity.Claims;
-            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            XmlResultForm rtn = null;
-            XmlGetForm xmlCreateForm = new XmlGetForm
-            {
-                loginguid = loginGuid,
-                obj = new XmlSetForm
-                {
-                    classname = type
-                }
-            };
-            rtn = PDMUtils.getModifyForm(xmlCreateForm);
-            return Json(rtn);
         }
 
         // GET: api/Page/5
-        [HttpGet("{type}/{guid}", Name = "GetPageTypeEdit")]
-        public ActionResult Get(string type, string guid)
+        [HttpGet("{pageid}")]
+        public ActionResult Get(string pageid)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null)
@@ -49,18 +31,16 @@ namespace ChartsWebApi.Controllers
             }
             IEnumerable<Claim> claims = identity.Claims;
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            XmlResultForm rtn = null;
-            XmlGetForm xmlModForm = new XmlGetForm
+            XmlGetForm xmlGetForm = new XmlGetForm
             {
                 loginguid = loginGuid,
-                obj = new XmlSetForm
+                obj = new XmlGetDataRows
                 {
-                    classname = type,
-                    guid = guid
+                    guid = pageid
                 }
             };
-            rtn = PDMUtils.getModifyForm(xmlModForm);
-            return Json(rtn);
+            var result = PDMUtils.getDataDef(xmlGetForm);
+            return Json(result);
         }
 
         // POST: api/Page

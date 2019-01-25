@@ -34,8 +34,6 @@ namespace GetPDMObject
         public string guid { get; set; }
         [XmlAttribute("FORMGUID")]
         public string formguid { get; set; }
-        [XmlAttribute("NNAME")]
-        public string name2 { get; set; }
         [XmlAttribute("NAME")]
         public string name { get; set; }
         [XmlAttribute("IMG")]
@@ -107,7 +105,7 @@ namespace GetPDMObject
     {
         [XmlAttribute("FORMGUID")]
         public string guid { get; set; }
-        [XmlAttribute("FORMGTYPE")]
+        [XmlAttribute("FORMTYPE")]
         public string type { get; set; }
         [XmlAttribute("FORMNAME")]
         public string name { get; set; }

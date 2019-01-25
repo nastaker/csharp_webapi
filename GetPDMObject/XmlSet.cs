@@ -57,14 +57,5 @@ namespace GetPDMObject
         public XmlSetType obj { get; set; }
     }
 
-    [XmlRoot(ElementName = "PARENT")]
-    public class XmlSetForm 
-    {
-        [XmlAttribute("CLASSNAME")]
-        public string classname { get; set; }
-        [XmlElement("GUID")]
-        public string guid { get; set; }
-    }
-
 
 }

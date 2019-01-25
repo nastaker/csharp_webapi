@@ -12,26 +12,61 @@ using Microsoft.AspNetCore.Mvc;
 namespace ChartsWebApi.Controllers
 {
     [Authorize]
-    [EnableCors("CorsChartNodeClient")]
+    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
-    public class CompanyController : Controller
+    public class SysFormController : Controller
     {
-        // GET: api/Company
+        // GET: api/SysForm
         [HttpGet]
-        public IEnumerable<string> Get()
+        public ActionResult Get(string type)
         {
-            return new string[] { "value1", "value2" };
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized();
+            }
+            IEnumerable<Claim> claims = identity.Claims;
+            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
+            XmlResultForm rtn = null;
+            XmlGetForm xmlCreateForm = new XmlGetForm
+            {
+                loginguid = loginGuid,
+                obj = new XmlGetDataRows
+                {
+                    classname = type
+                }
+            };
+            rtn = PDMUtils.getModifyForm(xmlCreateForm);
+            return Json(rtn);
         }
 
-        // GET: api/Company/5
-        [HttpGet("{id}", Name = "GetCompany")]
-        public string Get(int id)
+        // GET: api/SysForm/5
+        [HttpGet("{type}/{guid}", Name = "GetPageTypeEdit")]
+        public ActionResult Get(string type, string guid)
         {
-            return "value";
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized();
+            }
+            IEnumerable<Claim> claims = identity.Claims;
+            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
+            XmlResultForm rtn = null;
+            XmlGetForm xmlModForm = new XmlGetForm
+            {
+                loginguid = loginGuid,
+                obj = new XmlGetDataRows
+                {
+                    classname = type,
+                    guid = guid
+                }
+            };
+            rtn = PDMUtils.getModifyForm(xmlModForm);
+            return Json(rtn);
         }
 
-        // POST: api/Company
+        // POST: api/SysForm
         [HttpPost]
         public ActionResult Post([FromBody]ViewModel.FormData form)
         {
@@ -77,7 +112,7 @@ namespace ChartsWebApi.Controllers
             return Json(result);
         }
 
-        // PUT: api/Company/5
+        // PUT: api/SysForm/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {

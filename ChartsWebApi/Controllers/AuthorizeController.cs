@@ -12,7 +12,7 @@ using GetPDMObject;
 
 namespace ChartsWebApi.Controllers
 {
-    [EnableCors("CorsChartNodeClient")]
+    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     public class AuthorizeController : Controller
     {

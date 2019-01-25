@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Cors;
 
 namespace ChartsWebApi.Controllers
 {
-    [EnableCors("CorsChartNodeClient")]
+    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     public class ValuesController : Controller
     {

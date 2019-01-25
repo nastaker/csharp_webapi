@@ -8,7 +8,7 @@ using GetPDMObject;
 namespace ChartsWebApi.Controllers
 {
     [Authorize]
-    [EnableCors("CorsChartNodeClient")]
+    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     public class MenuController : Controller
     {

@@ -6,7 +6,7 @@ using Repository.Models;
 
 namespace ChartsWebApi.Controllers
 {
-    [EnableCors("CorsChartNodeClient")]
+    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     public class ChartsController : Controller
     {
