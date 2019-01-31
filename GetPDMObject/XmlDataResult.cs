@@ -97,6 +97,8 @@ namespace GetPDMObject
         public string name { get; set; }
         [XmlAttribute("SHOWMSG")]
         public string hasMsg { get; set; }
+        [XmlAttribute("ISFROM")]
+        public string isform { get; set; }
         [XmlAttribute("UPFORM")]
         public string type { get; set; }
         [XmlAttribute("FORMGUID")]
@@ -118,13 +120,6 @@ namespace GetPDMObject
         public string tabcount { get; set; }
         [XmlElement("SELECT")]
         public string query { get; set; }
-        [XmlElement("ROWS")]
-        public XmlResultDataRowDef rowdef { get; set; }
-    }
-
-    [XmlRoot(ElementName = "ROWS")]
-    public class XmlResultDataRowDef
-    {
         [XmlElement("ROW")]
         public List<XmlResultDataRow> rows { get; set; }
     }
@@ -144,4 +139,11 @@ namespace GetPDMObject
         [XmlElement("VALUE")]
         public string value { get; set; }
     }
+
+    [XmlRoot(ElementName = "REVALUE")]
+    public class XmlResultValue
+    {
+        [XmlElement(ElementName = "FORM")]
+        public XmlResultForm form { get; set; }
+    } 
 }

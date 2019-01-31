@@ -74,12 +74,12 @@ namespace GetPDMObject
             {
                 throw new LoginException(xmlResult.err);
             }
-            return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
+            return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[1]) as XmlResultForm;
         }
 
         public static XmlResult modifyFormData(XmlSet xmlSet)
         {
-            XmlDocument xmlDoc = OiEmData.Org_SetDataRow(SerializeToXmlDocument(xmlSet) as XmlDocument);
+            XmlDocument xmlDoc = OiProData.Pro_SetDataRow(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
@@ -121,6 +121,54 @@ namespace GetPDMObject
             return DeserializeXmlDocument(typeof(XmlResultDataTable), (xmlResult.revalue as XmlNode[])[0]) as XmlResultDataTable;
         }
 
+        public static XmlResultValue setAction(XmlSet xmlSet)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_SetAction(SerializeToXmlDocument(xmlSet) as XmlDocument);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            if (xmlResult.recode != "0")
+            {
+                throw new LoginException(xmlResult.err);
+            }
+            return DeserializeXmlDocument(typeof(XmlResultValue), ConvertToXmlNode(xmlResult.revalue)) as XmlResultValue;
+        }
+
+        public static XmlResultValue setAction(XmlDocument xmlSet)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            if (xmlResult.recode != "0")
+            {
+                throw new LoginException(xmlResult.err);
+            }
+            return DeserializeXmlDocument(typeof(XmlResultValue), ConvertToXmlNode(xmlResult.revalue)) as XmlResultValue;
+        }
+
+        public static XmlNode ConvertToXmlNode(Object obj)
+        {
+            XmlNode[] nodes = obj as XmlNode[];
+            XmlDocument xmlDocument = new XmlDocument();
+            XmlElement node = xmlDocument.CreateElement("REVALUE", "");
+            xmlDocument.AppendChild(node);
+            for (int i = 0, j = nodes.Length; i < j; i++)
+            {
+                node.AppendChild(xmlDocument.ImportNode(nodes[i], true));
+            }
+            return xmlDocument;
+        }
+        
+        #region 测试用方法
+        public static string getDataRows(XmlGetForm xmlSet, bool test)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_GetGridValue(SerializeToXmlDocument(xmlSet) as XmlDocument);
+            return xmlDoc.OuterXml;
+        }
+        public static string setAction(XmlSet xmlSet, bool test)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_SetAction(SerializeToXmlDocument(xmlSet) as XmlDocument);
+            return xmlDoc.OuterXml;
+        }
+        #endregion
+
         public static XmlNode SerializeToXmlDocument(object input)
         {
             XmlSerializer ser = new XmlSerializer(input.GetType(), "");
@@ -150,14 +198,7 @@ namespace GetPDMObject
             XmlSerializer ser = new XmlSerializer(type);
             using (XmlReader reader = new XmlNodeReader(input))
             {
-                try
-                {
-                    return ser.Deserialize(reader);
-                }
-                catch (InvalidOperationException)
-                {
-                    return null;
-                }
+                return ser.Deserialize(reader);
             }
         }
     }

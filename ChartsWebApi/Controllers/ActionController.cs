@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ChartsWebApi.Controllers
 {
@@ -13,17 +15,25 @@ namespace ChartsWebApi.Controllers
     [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
-    public class PageController : Controller
+    public class ActionController : Controller
     {
-        // GET: api/Page
-        [HttpGet()]
-        public void Get()
+        // GET: api/Action
+        [HttpGet]
+        public IEnumerable<string> Get()
         {
+            return new string[] { "value1", "value2" };
         }
 
-        // GET: api/Page/5
-        [HttpGet("{pageid}")]
-        public ActionResult Get(string pageid)
+        // GET: api/Action/5
+        [HttpGet("{id}", Name = "Get")]
+        public string Get(int id)
+        {
+            return "value";
+        }
+
+        // POST: api/Action
+        [HttpPost]
+        public ActionResult Post([FromBody] JToken token)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null)
@@ -32,28 +42,17 @@ namespace ChartsWebApi.Controllers
             }
             IEnumerable<Claim> claims = identity.Claims;
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            XmlDocument doc = new XmlDocument();
-            XmlElement root = doc.CreateElement("OBJ");
-            XmlElement guid = doc.CreateElement("GUID");
-            guid.InnerText = pageid;
-            root.AppendChild(guid);
-            doc.AppendChild(root);
-            XmlGetForm xmlGetForm = new XmlGetForm
-            {
-                loginguid = loginGuid,
-                obj = doc
-            };
-            var result = PDMUtils.getDataDef(xmlGetForm);
+            string jsonStr = JsonConvert.SerializeObject(token);
+            XmlDocument doc = JsonConvert.DeserializeXmlNode(jsonStr, "SET");
+            XmlElement root = doc.DocumentElement;
+            XmlElement elemLoginguid = doc.CreateElement("LOGINGUID");
+            elemLoginguid.InnerText = loginGuid;
+            root.AppendChild(elemLoginguid);
+            var result = PDMUtils.setAction(doc);
             return Json(result);
         }
 
-        // POST: api/Page
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT: api/Page/5
+        // PUT: api/Action/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {

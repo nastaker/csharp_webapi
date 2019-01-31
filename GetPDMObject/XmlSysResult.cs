@@ -103,18 +103,18 @@ namespace GetPDMObject
     [XmlRoot(ElementName = "FORM")]
     public class XmlResultForm
     {
-        [XmlAttribute("FORMGUID")]
+        [XmlAttribute("GUID")]
         public string guid { get; set; }
         [XmlAttribute("FORMTYPE")]
         public string type { get; set; }
         [XmlAttribute("FORMNAME")]
         public string name { get; set; }
-        [XmlAttribute("S_WIDTH")]
-        public int width { get; set; }
-        [XmlAttribute("S_HEIGHT")]
-        public int height { get; set; }
-        [XmlAttribute("S_FONT_SIZE")]
-        public int fontsize { get; set; }
+        [XmlAttribute("SHOWNAME")]
+        public string showName { get; set; }
+        [XmlAttribute("WIDTH")]
+        public string width { get; set; }
+        [XmlAttribute("HEIGHT")]
+        public string height { get; set; }
         [XmlElement("TABPAGE")]
         public List<XmlResultTabpage> tabs { get; set; }
     }
@@ -122,25 +122,47 @@ namespace GetPDMObject
     [XmlRoot(ElementName = "TABPAGE")]
     public class XmlResultTabpage
     {
-        [XmlAttribute("TABGUID")]
+        [XmlAttribute("GUID")]
         public string guid { get; set; }
         [XmlAttribute("TABTYPE")]
         public string type { get; set; }
         [XmlAttribute("TABNAME")]
         public string name { get; set; }
-        [XmlAttribute("S_WIDTH")]
-        public int width { get; set; }
-        [XmlAttribute("S_HEIGHT")]
-        public int height { get; set; }
+        [XmlAttribute("show")]
+        public string show { get; set; }
 
         [XmlElement("CONTROL")]
         public List<XmlResultControl> controls { get; set; }
+        [XmlElement("TREE")]
+        public List<XmlResultTree> tree { get; set; }
+    }
+
+    [XmlRoot(ElementName = "TREE")]
+    public class XmlResultTree
+    {
+        [XmlAttribute("CLASSNAME")]
+        public string classname { get; set; }
+        [XmlAttribute("GUID")]
+        public string guid { get; set; }
+        [XmlAttribute("NAME")]
+        public string label { get; set; }
+        [XmlAttribute("IMG")]
+        public string img { get; set; }
+        [XmlAttribute("BACKCOLOR")]
+        public string backColor { get; set; }
+        [XmlAttribute("FORCOLOR")]
+        public string foreColor { get; set; }
+
+        [XmlElement("MENU")]
+        public List<XmlResultMenu2> menu { get; set; }
+        [XmlElement("TREE")]
+        public List<XmlResultTree> children { get; set; }
     }
 
     [XmlRoot(ElementName = "CONTROL")]
     public class XmlResultControl
     {
-        [XmlAttribute("CONTROLGUID")]
+        [XmlAttribute("GUID")]
         public string guid { get; set; }
         [XmlAttribute("CONTROLTYPE")]
         public string type { get; set; }
@@ -156,11 +178,20 @@ namespace GetPDMObject
         public string isRequired { get; set; }
         [XmlAttribute("READONLY")]
         public string isReadonly { get; set; }
-        [XmlAttribute("S_COL")]
+        [XmlAttribute("COL")]
         public int col { get; set; }
-        [XmlAttribute("S_WIDTH")]
-        public int width { get; set; }
-        [XmlAttribute("S_HEIGHT")]
+        [XmlAttribute("HEIGHT")]
         public int height { get; set; }
+        [XmlElement("ITEM")]
+        public List<XmlResultControlItem> items { get; set; }
+    }
+
+    [XmlRoot(ElementName = "ITEM")]
+    public class XmlResultControlItem
+    {
+        [XmlAttribute("VALUE")]
+        public string value { get; set; }
+        [XmlAttribute("LABEL")]
+        public string label { get; set; }
     }
 }

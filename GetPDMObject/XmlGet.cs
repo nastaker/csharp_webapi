@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System.Xml;
+using System.Xml.Serialization;
 
 namespace GetPDMObject
 {
@@ -24,26 +25,9 @@ namespace GetPDMObject
     [XmlRoot(ElementName = "GET")]
     public class XmlGetForm
     {
-        [XmlElement("OBJ")]
-        public XmlGetDataRows obj { get; set; }
+        [XmlAnyElement("OBJ")]
+        public XmlNode obj { get; set; }
         [XmlElement("LOGINGUID")]
         public string loginguid { get; set; }
-    }
-
-    [XmlRoot(ElementName = "PARENT")]
-    public class XmlGetDataRows
-    {
-        [XmlAttribute("CLASSNAME")]
-        public string classname { get; set; }
-        [XmlElement("GUID")]
-        public string guid { get; set; }
-        [XmlElement("PAGE")]
-        public string page { get; set; }
-        [XmlElement("PAGECOUNT")]
-        public string pagesize { get; set; }
-        [XmlElement("COLORDER")]
-        public string order { get; set; }
-        [XmlElement("SELECT")]
-        public string query { get; set; }
     }
 }
