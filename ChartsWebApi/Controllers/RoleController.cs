@@ -25,7 +25,11 @@ namespace ChartsWebApi.Controllers
             }
             IEnumerable<Claim> claims = identity.Claims;
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            XmlResultUserRole role = PDMUtils.getRole(loginGuid);
+            XmlGet xmlGet = new XmlGet
+            {
+                loginguid = loginGuid
+            };
+            XmlResultUserRole role = PDMUtils.getRole(xmlGet);
             return Json(role);
         }
 

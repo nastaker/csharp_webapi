@@ -23,7 +23,11 @@ namespace ChartsWebApi.Controllers
             }
             IEnumerable<Claim> claims = identity.Claims;
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            List<XmlResultMenu> menulist = PDMUtils.getMenu(loginGuid);
+            XmlGet xmlGet = new XmlGet
+            {
+                loginguid = loginGuid
+            };
+            List<XmlResultMenu> menulist = PDMUtils.getMenu(xmlGet);
             return Json(menulist);
         }
 
@@ -40,9 +44,20 @@ namespace ChartsWebApi.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        public ActionResult Post([FromBody] XmlSet xmlset)
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                return Unauthorized();
+            }
+            IEnumerable<Claim> claims = identity.Claims;
+            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
+            xmlset.loginguid = loginGuid;
+            var result = PDMUtils.changeRole(xmlset);
+            return Json(result);
         }
+
 
         // PUT api/values/5
         [HttpPut("{id}")]

@@ -36,12 +36,12 @@ namespace ChartsWebApi.Controllers
             XmlElement root = doc.CreateElement("OBJ");
             root.SetAttribute("CLASSNAME", type);
             doc.AppendChild(root);
-            XmlGetForm xmlCreateForm = new XmlGetForm
+            XmlSet xmlget = new XmlSet
             {
                 loginguid = loginGuid,
                 obj = doc
             };
-            rtn = PDMUtils.getModifyForm(xmlCreateForm);
+            rtn = PDMUtils.setAction(xmlget);
             return Json(rtn);
         }
 
@@ -65,12 +65,12 @@ namespace ChartsWebApi.Controllers
             eleGuid.InnerText = guid;
             root.SetAttribute("CLASSNAME", type);
             doc.AppendChild(root);
-            XmlGetForm xmlModForm = new XmlGetForm
+            XmlSet xmlset = new XmlSet
             {
                 loginguid = loginGuid,
                 obj = doc
             };
-            rtn = PDMUtils.getModifyForm(xmlModForm);
+            rtn = PDMUtils.setAction(xmlset);
             return Json(rtn);
         }
 

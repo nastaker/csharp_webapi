@@ -13,17 +13,9 @@ namespace GetPDMObject
         [XmlElement("PRONAME")]
         public string proname { get; set; }
     }
-
-
+    
     [XmlRoot(ElementName = "GET")]
-    public class XmlLoginGuid
-    {
-        [XmlElement("LOGINGUID")]
-        public string loginguid { get; set; }
-    }
-
-    [XmlRoot(ElementName = "GET")]
-    public class XmlGetForm
+    public class XmlGet
     {
         [XmlAnyElement("OBJ")]
         public XmlNode obj { get; set; }

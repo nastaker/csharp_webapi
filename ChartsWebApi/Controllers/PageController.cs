@@ -22,8 +22,14 @@ namespace ChartsWebApi.Controllers
         }
 
         // GET: api/Page/5
-        [HttpGet("{pageid}")]
-        public ActionResult Get(string pageid)
+        [HttpGet("{id}")]
+        public void Get(string id)
+        {
+        }
+
+        // POST: api/Page
+        [HttpPost]
+        public ActionResult Post([FromBody] XmlSet xmlset)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null)
@@ -32,25 +38,9 @@ namespace ChartsWebApi.Controllers
             }
             IEnumerable<Claim> claims = identity.Claims;
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            XmlDocument doc = new XmlDocument();
-            XmlElement root = doc.CreateElement("OBJ");
-            XmlElement guid = doc.CreateElement("GUID");
-            guid.InnerText = pageid;
-            root.AppendChild(guid);
-            doc.AppendChild(root);
-            XmlGetForm xmlGetForm = new XmlGetForm
-            {
-                loginguid = loginGuid,
-                obj = doc
-            };
-            var result = PDMUtils.getDataDef(xmlGetForm);
+            xmlset.loginguid = loginGuid;
+            var result = PDMUtils.setAction(xmlset);
             return Json(result);
-        }
-
-        // POST: api/Page
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
         }
 
         // PUT: api/Page/5

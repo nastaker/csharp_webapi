@@ -47,12 +47,12 @@ namespace ChartsWebApi.Controllers
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
             string jsonStr = JsonConvert.SerializeObject(token);
             XmlNode node = JsonConvert.DeserializeXmlNode(jsonStr, "OBJ");
-            XmlGetForm xmlGetForm = new XmlGetForm
+            XmlGet xmlget = new XmlGet
             {
                 loginguid = loginGuid,
                 obj = node
             };
-            var result = PDMUtils.getDataRows(xmlGetForm);
+            var result = PDMUtils.getDataRows(xmlget);
             return Json(result);
         }
 

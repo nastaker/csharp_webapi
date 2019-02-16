@@ -49,7 +49,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PDMUtils.cs" />
     <Compile Include="XmlGet.cs" />
-    <Compile Include="XmlSysResult.cs" />
     <Compile Include="XmlDataResult.cs" />
     <Compile Include="XmlSet.cs" />
   </ItemGroup>

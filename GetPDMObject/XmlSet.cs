@@ -6,10 +6,10 @@ namespace GetPDMObject
     [XmlRoot(ElementName = "SET")]
     public class XmlSet
     {
-        [XmlAttribute("FORMGUID")]
+        [XmlElement("FORMGUID")]
         public string formguid { get; set; }
-        [XmlAttribute("ACTION")]
-        public string actionname { get; set; }
+        [XmlElement("ACTION")]
+        public string action { get; set; }
         [XmlElement("LOGINGUID")]
         public string loginguid { get; set; }
         [XmlAnyElement("OBJ")]

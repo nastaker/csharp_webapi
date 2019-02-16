@@ -29,52 +29,40 @@ namespace GetPDMObject
         }
 
 
-        public static List<XmlResultMenu> getMenu(string loginguid)
+        public static List<XmlResultMenu> getMenu(XmlGet xmlget)
         {
-            XmlLoginGuid xmlLoginGuid = new XmlLoginGuid
-            {
-                loginguid = loginguid
-            };
-            List<XmlResultMenu> xmlMenus = new List<XmlResultMenu>();
-            XmlDocument xmlDoc = OiProData.Pro_GetMyMenu(SerializeToXmlDocument(xmlLoginGuid) as XmlDocument);
+            XmlDocument xmlDoc = OiProData.Pro_GetMyMenu(SerializeToXmlDocument(xmlget) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
                 throw new LoginException(xmlResult.err);
             }
-            XmlNode[] res = (xmlResult.revalue as XmlNode[]);
-            for (int i = 0, j = res.Length; i < j; i++)
-            {
-                xmlMenus.Add(DeserializeXmlDocument(typeof(XmlResultMenu), res[i]) as XmlResultMenu);
-            }
-            return xmlMenus;
+            XmlResultMenu menu = DeserializeXmlDocument(typeof(XmlResultMenu), ConvertToXmlNode(xmlResult.revalue, "MENUS")) as XmlResultMenu;
+            return menu.children;
         }
 
-        public static XmlResultUserRole getRole(string loginguid)
+        public static List<XmlResultMenu> changeRole(XmlSet xmlSet)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_SetAction(SerializeToXmlDocument(xmlSet) as XmlDocument);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            if (xmlResult.recode != "0")
+            {
+                throw new LoginException(xmlResult.err);
+            }
+            XmlResultMenu menu = DeserializeXmlDocument(typeof(XmlResultMenu), ConvertToXmlNode(xmlResult.revalue, "MENUS")) as XmlResultMenu;
+            return menu.children;
+        }
+
+        public static XmlResultUserRole getRole(XmlGet xmlget)
         {
             //获取权限
-            XmlLoginGuid xmlLoginGuid = new XmlLoginGuid
-            {
-                loginguid = loginguid
-            };
-            XmlDocument xmlDoc = OiEmData.Org_GetMyNodes(SerializeToXmlDocument(xmlLoginGuid) as XmlDocument);
+            XmlDocument xmlDoc = OiEmData.Org_GetMyNodes(SerializeToXmlDocument(xmlget) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
                 throw new LoginException(xmlResult.err);
             }
             return DeserializeXmlDocument(typeof(XmlResultUserRole), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserRole;
-        }
-
-        public static XmlResultForm getModifyForm(XmlGetForm xmlCreateForm)
-        {
-            XmlDocument xmlDoc = OiEmData.Org_GetDataForm(SerializeToXmlDocument(xmlCreateForm) as XmlDocument);
-            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new LoginException(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[1]) as XmlResultForm;
         }
 
         public static XmlResult modifyFormData(XmlSet xmlSet)
@@ -99,18 +87,7 @@ namespace GetPDMObject
             return xmlResult;
         }
 
-        public static XmlResultDataDef getDataDef(XmlGetForm xmlSet)
-        {
-            XmlDocument xmlDoc = OiProData.Pro_GetForm(SerializeToXmlDocument(xmlSet) as XmlDocument);
-            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new LoginException(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultDataDef), (xmlResult.revalue as XmlNode[])[0]) as XmlResultDataDef;
-        }
-
-        public static XmlResultDataTable getDataRows(XmlGetForm xmlSet)
+        public static XmlResultDataTable getDataRows(XmlGet xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetGridValue(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
@@ -121,7 +98,7 @@ namespace GetPDMObject
             return DeserializeXmlDocument(typeof(XmlResultDataTable), (xmlResult.revalue as XmlNode[])[0]) as XmlResultDataTable;
         }
 
-        public static XmlResultValue setAction(XmlSet xmlSet)
+        public static XmlResultForm setAction(XmlSet xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
@@ -129,10 +106,10 @@ namespace GetPDMObject
             {
                 throw new LoginException(xmlResult.err);
             }
-            return DeserializeXmlDocument(typeof(XmlResultValue), ConvertToXmlNode(xmlResult.revalue)) as XmlResultValue;
+            return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
         }
 
-        public static XmlResultValue setAction(XmlDocument xmlSet)
+        public static XmlResultForm setAction(XmlDocument xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
@@ -140,14 +117,14 @@ namespace GetPDMObject
             {
                 throw new LoginException(xmlResult.err);
             }
-            return DeserializeXmlDocument(typeof(XmlResultValue), ConvertToXmlNode(xmlResult.revalue)) as XmlResultValue;
+            return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
         }
 
-        public static XmlNode ConvertToXmlNode(Object obj)
+        public static XmlNode ConvertToXmlNode(object obj, string root = "REVALUE")
         {
             XmlNode[] nodes = obj as XmlNode[];
             XmlDocument xmlDocument = new XmlDocument();
-            XmlElement node = xmlDocument.CreateElement("REVALUE", "");
+            XmlElement node = xmlDocument.CreateElement(root, "");
             xmlDocument.AppendChild(node);
             for (int i = 0, j = nodes.Length; i < j; i++)
             {
@@ -157,7 +134,7 @@ namespace GetPDMObject
         }
         
         #region 测试用方法
-        public static string getDataRows(XmlGetForm xmlSet, bool test)
+        public static string getDataRows(XmlGet xmlSet, bool test)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetGridValue(SerializeToXmlDocument(xmlSet) as XmlDocument);
             return xmlDoc.OuterXml;
@@ -167,6 +144,12 @@ namespace GetPDMObject
             XmlDocument xmlDoc = OiProData.Pro_SetAction(SerializeToXmlDocument(xmlSet) as XmlDocument);
             return xmlDoc.OuterXml;
         }
+        public static string getMenu(XmlGet xmlget, bool test)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_GetMyMenu(SerializeToXmlDocument(xmlget) as XmlDocument);
+            return xmlDoc.OuterXml;
+        }
+
         #endregion
 
         public static XmlNode SerializeToXmlDocument(object input)
