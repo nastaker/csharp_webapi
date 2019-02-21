@@ -1,13 +1,15 @@
-﻿using GetPDMObject;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Xml;
+using GetPDMObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Xml;
 
 namespace ChartsWebApi.Controllers
 {
@@ -15,23 +17,31 @@ namespace ChartsWebApi.Controllers
     [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ActionController : Controller
+    public class DownloadController : Controller
     {
-        // GET: api/Action
+
+        private IMemoryCache _cache;
+
+        public DownloadController(IMemoryCache cache)
+        {
+            _cache = cache;
+        }
+
+        // GET: api/Download
         [HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
         }
 
-        // GET: api/Action/5
-        [HttpGet("{id}", Name = "Get")]
+        // GET: api/Download/5
+        [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST: api/Action
+        // POST: api/Download
         [HttpPost]
         public ActionResult Post([FromBody] JToken token)
         {
@@ -48,11 +58,14 @@ namespace ChartsWebApi.Controllers
             XmlElement elemLoginguid = doc.CreateElement("LOGINGUID");
             elemLoginguid.InnerText = loginGuid;
             root.AppendChild(elemLoginguid);
-            var result = PDMUtils.setAction(doc);
-            return Json(result);
+            var result = PDMUtils.getDownload(doc);
+            // 保存到Session中，然后返回session的key，也就是随机guid
+            string key = Guid.NewGuid().ToString("N");
+            _cache.Set(key, result);
+            return Content(key);
         }
 
-        // PUT: api/Action/5
+        // PUT: api/Download/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {

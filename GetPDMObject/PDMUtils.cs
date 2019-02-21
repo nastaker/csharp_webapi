@@ -35,7 +35,7 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             XmlResultMenu menu = DeserializeXmlDocument(typeof(XmlResultMenu), ConvertToXmlNode(xmlResult.revalue, "MENUS")) as XmlResultMenu;
             return menu.children;
@@ -47,7 +47,7 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             XmlResultMenu menu = DeserializeXmlDocument(typeof(XmlResultMenu), ConvertToXmlNode(xmlResult.revalue, "MENUS")) as XmlResultMenu;
             return menu.children;
@@ -60,20 +60,20 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             return DeserializeXmlDocument(typeof(XmlResultUserRole), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserRole;
         }
 
-        public static XmlResult modifyFormData(XmlSet xmlSet)
+        public static XmlResultData modifyFormData(XmlSet xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetDataRow(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
-            return xmlResult;
+            return DeserializeXmlDocument(typeof(XmlResultData), ConvertToXmlNode(xmlResult.revalue)) as XmlResultData;
         }
 
         public static XmlResult delete(XmlSet xmlSet)
@@ -82,7 +82,7 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             return xmlResult;
         }
@@ -93,7 +93,7 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             return DeserializeXmlDocument(typeof(XmlResultDataTable), (xmlResult.revalue as XmlNode[])[0]) as XmlResultDataTable;
         }
@@ -104,7 +104,7 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
         }
@@ -115,9 +115,32 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
+        }
+
+        public static XmlResultFile getDownload(XmlDocument xmlSet)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            if (xmlResult.recode != "0")
+            {
+                throw new LoginException(xmlResult.err);
+            }
+            return DeserializeXmlDocument(typeof(XmlResultFile), (xmlResult.revalue as XmlNode[])[0]) as XmlResultFile;
+        }
+
+        public static List<XmlResultTree> getTreeNodes(XmlDocument doc)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_GetTreeNode(doc);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            if (xmlResult.recode != "0")
+            {
+                throw new Exception(xmlResult.err);
+            }
+            XmlResultTree tree = DeserializeXmlDocument(typeof(XmlResultTree), ConvertToXmlNode(xmlResult.revalue, "TREE")) as XmlResultTree;
+            return tree.children;   
         }
 
         public static XmlNode ConvertToXmlNode(object obj, string root = "REVALUE")

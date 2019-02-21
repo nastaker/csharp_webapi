@@ -1,13 +1,14 @@
-﻿using GetPDMObject;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
+using System.Xml;
+using ChartsWebApi.Extensions;
+using GetPDMObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Xml;
+using Newtonsoft.Json.Serialization;
 
 namespace ChartsWebApi.Controllers
 {
@@ -15,25 +16,25 @@ namespace ChartsWebApi.Controllers
     [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ActionController : Controller
+    public class TreeController : Controller
     {
-        // GET: api/Action
+        // GET: api/Tree
         [HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
         }
 
-        // GET: api/Action/5
-        [HttpGet("{id}", Name = "Get")]
+        // GET: api/Tree/5
+        [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST: api/Action
+        // POST: api/Tree
         [HttpPost]
-        public ActionResult Post([FromBody] JToken token)
+        public ActionResult Post([FromBody]JToken token)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null)
@@ -42,17 +43,17 @@ namespace ChartsWebApi.Controllers
             }
             IEnumerable<Claim> claims = identity.Claims;
             string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            string jsonStr = JsonConvert.SerializeObject(token);
-            XmlDocument doc = JsonConvert.DeserializeXmlNode(jsonStr, "SET");
+            var jsonStr = JsonConvert.SerializeObject(token);
+            XmlDocument doc = JsonConvert.DeserializeXmlNode(jsonStr, "GET");
             XmlElement root = doc.DocumentElement;
             XmlElement elemLoginguid = doc.CreateElement("LOGINGUID");
             elemLoginguid.InnerText = loginGuid;
             root.AppendChild(elemLoginguid);
-            var result = PDMUtils.setAction(doc);
+            var result = PDMUtils.getTreeNodes(doc);
             return Json(result);
         }
 
-        // PUT: api/Action/5
+        // PUT: api/Tree/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {

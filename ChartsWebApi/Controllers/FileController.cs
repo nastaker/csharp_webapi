@@ -1,35 +1,67 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ChartsWebApi.ViewModel;
+﻿using GetPDMObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
-using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Caching.Memory;
 using System;
-using Microsoft.AspNetCore.Authorization;
+using System.IO;
 
 namespace ChartsWebApi.Controllers
 {
-    [Authorize]
-    [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
     public class FileController : Controller
     {
         private readonly IHostingEnvironment _hostingEnvironment;
+        private IMemoryCache _cache;
 
-        public FileController(IHostingEnvironment hostingEnvironment)
+        public FileController(IHostingEnvironment hostingEnvironment, IMemoryCache cache)
         {
             _hostingEnvironment = hostingEnvironment;
+            _cache = cache;
         }
 
         // GET api/file
-        [HttpGet]
-        public void Get()
+        [HttpGet("{id}")]
+        public ActionResult Get(string id)
         {
+            XmlResultFile file;
+            if (_cache.TryGetValue(id, out file))
+            {
+                if (System.IO.File.Exists(file.path))
+                {
+                    var provider = new FileExtensionContentTypeProvider();
+                    var suffix = file.path.Substring(file.path.LastIndexOf('.'));
+                    string contentType;
+                    if (!provider.TryGetContentType(file.path, out contentType))
+                    {
+                        contentType = "application/octet-stream";
+                    }
+                    if (file.type == "downfile")
+                    {
+                        return File(new FileStream(file.path, FileMode.Open), contentType, file.name + suffix);
+                    }
+                    else
+                    {
+                        return File(new FileStream(file.path, FileMode.Open), contentType);
+                    }
+                }
+                else
+                {
+                    return Content("文件已经被移动或删除");
+                }
+            }
+            return Content("链接已过期");
         }
 
         // POST api/file
+        [Authorize]
+        [EnableCors("CorsGuowenyan")]
         [HttpPost]
-        public ActionResult Post([FromForm]MyModel myModel)
+        [DisableRequestSizeLimit]
+        public ActionResult Post()
         {
             // 如果有文件，这里上传
             var file = Request.Form.Files[0];
@@ -56,8 +88,8 @@ namespace ChartsWebApi.Controllers
         }
 
         // PUT api/file/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        [HttpPut]
+        public void Put()
         {
         }
 

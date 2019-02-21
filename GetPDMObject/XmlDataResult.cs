@@ -88,10 +88,8 @@ namespace GetPDMObject
         public string hasMsg { get; set; }
         [XmlAttribute("ISFROM")]
         public string isform { get; set; }
-        [XmlAttribute("UPFORM")]
+        [XmlAttribute("TYPE")]
         public string type { get; set; }
-        [XmlAttribute("FORMGUID")]
-        public string formguid { get; set; }
     }
 
     [XmlRoot(ElementName = "OBJ")]
@@ -110,11 +108,11 @@ namespace GetPDMObject
         [XmlElement("SELECT")]
         public string query { get; set; }
         [XmlElement("ROW")]
-        public List<XmlResultDataRow> rows { get; set; }
+        public List<XmlResultDataRowRaw> rows { get; set; }
     }
 
     [XmlRoot(ElementName = "ROW")]
-    public class XmlResultDataRow
+    public class XmlResultDataRowRaw
     {
         [XmlElement("ROWDEF")]
         public List<XmlResultDataRowData> rowdata { get; set; }
@@ -149,6 +147,8 @@ namespace GetPDMObject
         public string userguid { get; set; }
         [XmlAttribute("USERNAME")]
         public string username { get; set; }
+        [XmlAttribute("RoleName")]
+        public string rolename { get; set; }
 
         public string loginguid { get; set; }
     }
@@ -219,14 +219,27 @@ namespace GetPDMObject
         [XmlAttribute("SHOW")]
         public string show { get; set; }
 
-        [XmlElement("CONTROL")]
-        public List<XmlResultControl> controls { get; set; }
-        [XmlElement("TREE")]
-        public List<XmlResultTree> tree { get; set; }
         [XmlElement("MENUS")]
         public XmlResultMenu menu { get; set; }
+        [XmlElement("CONTROL")]
+        public List<XmlResultControl> controls { get; set; }
+        [XmlElement("TREEVIEW")]
+        public XmlResultTreeView treeview { get; set; }
+        [XmlElement("TREE")]
+        public List<XmlResultTree> tree { get; set; }
         [XmlElement("GRID")]
         public XmlResultTableDef tableDef { get; set; }
+    }
+
+    [XmlRoot(ElementName = "TREEVIEW")]
+    public class XmlResultTreeView
+    {
+        [XmlAttribute("GUID")]
+        public string guid { get; set; }
+        [XmlAttribute("NAME")]
+        public string name { get; set; }
+        [XmlAttribute("CON")]
+        public string con { get; set; }
     }
 
     [XmlRoot(ElementName = "TREE")]
@@ -240,10 +253,12 @@ namespace GetPDMObject
         public string label { get; set; }
         [XmlAttribute("IMG")]
         public string img { get; set; }
+        [XmlAttribute("ISNODES")]
+        public string hasChildren { get; set; }
         [XmlAttribute("BACKCOLOR")]
-        public string backColor { get; set; }
+        public string bgColor { get; set; }
         [XmlAttribute("FORCOLOR")]
-        public string foreColor { get; set; }
+        public string color { get; set; }
 
         [XmlElement("MENU")]
         public List<XmlResultMenu> menu { get; set; }
@@ -276,6 +291,8 @@ namespace GetPDMObject
         public int height { get; set; }
         [XmlElement("ITEM")]
         public List<XmlResultControlItem> items { get; set; }
+        [XmlElement("ACTION")]
+        public XmlResultMenuAction action { get; set; }
     }
 
     [XmlRoot(ElementName = "ITEM")]
@@ -288,4 +305,37 @@ namespace GetPDMObject
         [XmlElement("ITEM")]
         public List<XmlResultControlItem> children { get; set; }
     }
+
+    [XmlRoot(ElementName = "REVALUE")]
+    public class XmlResultData
+    {
+        [XmlElement("ROW")]
+        public XmlResultRow row { get; set; }
+        [XmlElement("TREE")]
+        public XmlResultTree tree { get; set; }
+    }
+
+    [XmlRoot(ElementName = "ROW")]
+    public class XmlResultRow
+    {
+        [XmlAttribute("BACKCOLOR")]
+        public string bgcolor { get; set; }
+        [XmlAttribute("FORCOLOR")]
+        public string color { get; set; }
+        [XmlElement("ROWDEF")]
+        public List<XmlResultDataRowData> rowdata { get; set; }
+    }
+    
+    [XmlRoot(ElementName = "OBJ")]
+    public class XmlResultFile
+    {
+        [XmlElement("TYPE")]
+        public string type { get; set; }
+        [XmlElement("NAME")]
+        public string name { get; set; }
+        [XmlElement("PATH")]
+        public string path { get; set; }
+    }
+
+
 }

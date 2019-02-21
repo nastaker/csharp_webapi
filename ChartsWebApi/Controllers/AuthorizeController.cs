@@ -31,18 +31,7 @@ namespace ChartsWebApi.Controllers
                 return BadRequest();
             }
             XmlResultUserLogin xmlResultUser = null;
-            try
-            {
-                xmlResultUser = PDMUtils.login(viewModel.User, viewModel.Password, "chpdms");
-            }
-            catch (LoginException ex)
-            {
-                return Content(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return Content(ex.Message);
-            }
+            xmlResultUser = PDMUtils.login(viewModel.User, viewModel.Password, "chpdms");
             var claim = new Claim[]{
                 new Claim(ClaimTypes.Name, xmlResultUser.username),
                 new Claim(ClaimTypes.NameIdentifier, xmlResultUser.userguid),
@@ -57,6 +46,8 @@ namespace ChartsWebApi.Controllers
 
             return Ok(new
             {
+                xmlResultUser.username,
+                xmlResultUser.rolename,
                 token = new JwtSecurityTokenHandler().WriteToken(token)
             });
         }

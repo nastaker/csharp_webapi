@@ -5,6 +5,7 @@ using ChartsWebApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -25,13 +26,19 @@ namespace ChartsWebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddMemoryCache();
             services.AddCors(options =>
                 options.AddPolicy("CorsGuowenyan", 
                 p => p.WithOrigins(Configuration["Cors:Origins:Guowenyan"])
                       .AllowCredentials()
                       .AllowAnyMethod()
                       .AllowAnyHeader()));
-
+            services.Configure<FormOptions>(options =>
+            {
+                options.ValueLengthLimit = 1_074_790_400;
+                options.MultipartBodyLengthLimit = 1_074_790_400;
+                options.MultipartHeadersLengthLimit = 1_074_790_400;
+            });
 
             //将appsettings.json中的JwtSettings部分的配置读取到JwtSettings中，这是给其他地方用的
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
