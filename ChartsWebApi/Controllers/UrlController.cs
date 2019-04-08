@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Xml;
 
@@ -15,23 +14,22 @@ namespace ChartsWebApi.Controllers
     [Authorize]
     [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
-    [ApiController]
-    public class ActionController : Controller
+    public class UrlController : Controller
     {
-        // POST: api/Action
+        // POST: api/Url
         [HttpPost]
         public ActionResult Post([FromBody] JToken token)
         {
-            string jsonStr = JsonConvert.SerializeObject(token);
             string loginguid = string.Empty;
             HttpContext.Request.Cookies.TryGetValue("loginguid", out loginguid);
+            string jsonStr = JsonConvert.SerializeObject(token);
             XmlDocument doc = JsonConvert.DeserializeXmlNode(jsonStr, "SET");
             XmlElement root = doc.DocumentElement;
             XmlElement elemLoginguid = doc.CreateElement("LOGINGUID");
             elemLoginguid.InnerText = loginguid;
             root.AppendChild(elemLoginguid);
-            var result = PDMUtils.setAction(doc);
-            return Json(result);
+            var result = PDMUtils.getString(doc);
+            return Content(result);
         }
     }
 }

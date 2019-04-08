@@ -1,14 +1,10 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using ChartsWebApi.Models;
+﻿using ChartsWebApi.Models;
+using ChartsWebApi.Services;
 using ChartsWebApi.ViewModel;
+using GetPDMObject;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using GetPDMObject;
 
 namespace ChartsWebApi.Controllers
 {
@@ -16,40 +12,23 @@ namespace ChartsWebApi.Controllers
     [Route("api/[controller]")]
     public class AuthorizeController : Controller
     {
-        private JwtSettings _jwtSettings;
+        private IUserService _userService;
 
-        public AuthorizeController(IOptions<JwtSettings> _jwtSettingsAccesser)
+        public AuthorizeController(IUserService userService)
         {
-            _jwtSettings = _jwtSettingsAccesser.Value;
+            _userService = userService;
         }
         
         [HttpPost]
-        public IActionResult Post([FromBody]LoginViewModel viewModel)
+        public IActionResult Post([FromBody]LoginViewModel loginViewModel)
         {
             if (!ModelState.IsValid)//判断是否合法
             {
                 return BadRequest();
             }
-            XmlResultUserLogin xmlResultUser = null;
-            xmlResultUser = PDMUtils.login(viewModel.User, viewModel.Password, "chpdms");
-            var claim = new Claim[]{
-                new Claim(ClaimTypes.Name, xmlResultUser.username),
-                new Claim(ClaimTypes.NameIdentifier, xmlResultUser.userguid),
-                new Claim(ClaimTypes.Hash, xmlResultUser.loginguid)
-            };
-            //对称秘钥
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-            //签名证书(秘钥，加密算法)
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            //生成token
-            var token = new JwtSecurityToken(_jwtSettings.Issuer, _jwtSettings.Audience, claim, DateTime.Now, DateTime.Now.AddMinutes(20), creds);
+            XmlResultUserLogin user = _userService.Authenticate(loginViewModel.User, loginViewModel.Password);
 
-            return Ok(new
-            {
-                xmlResultUser.username,
-                xmlResultUser.rolename,
-                token = new JwtSecurityTokenHandler().WriteToken(token)
-            });
+            return Ok(user);
         }
     }
 }

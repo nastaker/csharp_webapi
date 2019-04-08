@@ -17,6 +17,8 @@ namespace GetPDMObject
     [XmlRoot(ElementName = "GET")]
     public class XmlGet
     {
+        [XmlElement("ACTION")]
+        public string action { get; set; }
         [XmlAnyElement("OBJ")]
         public XmlNode obj { get; set; }
         [XmlElement("LOGINGUID")]

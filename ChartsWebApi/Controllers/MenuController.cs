@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
+﻿using ChartsWebApi.Extensions;
+using GetPDMObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using GetPDMObject;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace ChartsWebApi.Controllers
 {
@@ -16,59 +17,25 @@ namespace ChartsWebApi.Controllers
         [HttpGet]
         public ActionResult Get()
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity == null)
-            {
-                return Unauthorized();
-            }
-            IEnumerable<Claim> claims = identity.Claims;
-            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
+            string loginguid = string.Empty;
+            HttpContext.Request.Cookies.TryGetValue("loginguid", out loginguid);
             XmlGet xmlGet = new XmlGet
             {
-                loginguid = loginGuid
+                loginguid = loginguid
             };
             List<XmlResultMenu> menulist = PDMUtils.getMenu(xmlGet);
             return Json(menulist);
-        }
-
-        // GET api/values/5/index
-        [HttpGet("{id}")]
-        public ActionResult Get(int id)
-        {
-            if (id == 0)
-            {
-                return NoContent();
-            }
-            return NoContent();
         }
 
         // POST api/values
         [HttpPost]
         public ActionResult Post([FromBody] XmlSet xmlset)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity == null)
-            {
-                return Unauthorized();
-            }
-            IEnumerable<Claim> claims = identity.Claims;
-            string loginGuid = identity.FindFirst(ClaimTypes.Hash).Value;
-            xmlset.loginguid = loginGuid;
+            string loginguid = string.Empty;
+            HttpContext.Request.Cookies.TryGetValue("loginguid", out loginguid);
+            xmlset.loginguid = loginguid;
             var result = PDMUtils.changeRole(xmlset);
             return Json(result);
-        }
-
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-using System.Xml;
-using ChartsWebApi.Extensions;
+﻿using ChartsWebApi.Extensions;
 using GetPDMObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ChartsWebApi.Controllers
 {
@@ -14,17 +12,19 @@ namespace ChartsWebApi.Controllers
     [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
     [ApiController]
-    public class PageController : Controller
+    public class MessageController : Controller
     {
-        // POST: api/Page
-        [HttpPost]
-        public ActionResult Post([FromBody] XmlSet xmlset)
+        // GET: api/Message/5
+        [HttpGet]
+        public ActionResult Get()
         {
             string loginguid = string.Empty;
             HttpContext.Request.Cookies.TryGetValue("loginguid", out loginguid);
-            xmlset.loginguid = loginguid;
-            var result = PDMUtils.setAction(xmlset);
-            return Json(result);
+            XmlGet xmlGet = new XmlGet
+            {
+                loginguid = loginguid
+            }; 
+            return Json(PDMUtils.getMessage(xmlGet));
         }
     }
 }

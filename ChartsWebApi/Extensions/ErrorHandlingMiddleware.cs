@@ -31,9 +31,6 @@ namespace ChartsWebApi.Extensions
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var code = HttpStatusCode.InternalServerError; // 500 if unexpected
-
-            if (exception is LoginException) code = HttpStatusCode.Unauthorized;
-
             var result = JsonConvert.SerializeObject(new { error = exception.Message });
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)code;

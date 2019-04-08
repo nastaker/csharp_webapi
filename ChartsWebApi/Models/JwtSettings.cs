@@ -13,5 +13,7 @@ namespace ChartsWebApi.Models
         public string Audience { get; set; }
         //加密的key
         public string SecretKey { get; set; }
+        //过期时间
+        public int Expires { get; set; }
     }
 }

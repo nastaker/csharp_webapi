@@ -21,13 +21,28 @@ namespace GetPDMObject
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             XmlResultUserLogin xmlResultUser = DeserializeXmlDocument(typeof(XmlResultUserLogin), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserLogin;
             xmlResultUser.loginguid = (xmlResult.revalue as XmlNode[])[1].InnerText;
             return xmlResultUser;
         }
 
+        public static List<XmlResultMessage> getMessage(XmlGet xmlget)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_GetMsg(SerializeToXmlDocument(xmlget) as XmlDocument);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            if (xmlResult.recode != "0")
+            {
+                throw new Exception(xmlResult.err);
+            } 
+            XmlResultMessages msgs = (DeserializeXmlDocument(typeof(XmlResultMessages), ConvertToXmlNode(xmlResult.revalue)) as XmlResultMessages);
+            if (msgs == null)
+            {
+                return null;
+            }
+            return msgs.messages;
+        }
 
         public static List<XmlResultMenu> getMenu(XmlGet xmlget)
         {
@@ -120,13 +135,27 @@ namespace GetPDMObject
             return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
         }
 
+        public static string getString(XmlDocument xmlSet)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            if (xmlResult.recode != "0")
+            {
+                throw new Exception(xmlResult.err);
+            }
+            if ((xmlResult.revalue as XmlNode[])[0] != null){
+                return (xmlResult.revalue as XmlNode[])[0].InnerText;
+            }
+            return string.Empty;
+        }
+
         public static XmlResultFile getDownload(XmlDocument xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             if (xmlResult.recode != "0")
             {
-                throw new LoginException(xmlResult.err);
+                throw new Exception(xmlResult.err);
             }
             return DeserializeXmlDocument(typeof(XmlResultFile), (xmlResult.revalue as XmlNode[])[0]) as XmlResultFile;
         }
@@ -146,6 +175,10 @@ namespace GetPDMObject
         public static XmlNode ConvertToXmlNode(object obj, string root = "REVALUE")
         {
             XmlNode[] nodes = obj as XmlNode[];
+            if(nodes == null)
+            {
+                return null;
+            }
             XmlDocument xmlDocument = new XmlDocument();
             XmlElement node = xmlDocument.CreateElement(root, "");
             xmlDocument.AppendChild(node);
@@ -170,6 +203,12 @@ namespace GetPDMObject
         public static string getMenu(XmlGet xmlget, bool test)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetMyMenu(SerializeToXmlDocument(xmlget) as XmlDocument);
+            return xmlDoc.OuterXml;
+        }
+
+        public static string getTreeNodes(XmlDocument doc, bool test)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_GetTreeNode(doc);
             return xmlDoc.OuterXml;
         }
 
@@ -201,6 +240,10 @@ namespace GetPDMObject
 
         public static object DeserializeXmlDocument(Type type, XmlNode input)
         {
+            if (input == null)
+            {
+                return null;
+            }
             XmlSerializer ser = new XmlSerializer(type);
             using (XmlReader reader = new XmlNodeReader(input))
             {

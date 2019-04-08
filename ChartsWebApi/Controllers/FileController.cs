@@ -86,17 +86,5 @@ namespace ChartsWebApi.Controllers
             }
             return NoContent();
         }
-
-        // PUT api/file/5
-        [HttpPut]
-        public void Put()
-        {
-        }
-
-        // DELETE api/file/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

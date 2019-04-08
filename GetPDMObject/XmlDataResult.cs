@@ -85,7 +85,7 @@ namespace GetPDMObject
         [XmlAttribute("NAME")]
         public string name { get; set; }
         [XmlAttribute("SHOWMSG")]
-        public string hasMsg { get; set; }
+        public string msg { get; set; }
         [XmlAttribute("ISFROM")]
         public string isform { get; set; }
         [XmlAttribute("TYPE")]
@@ -149,6 +149,8 @@ namespace GetPDMObject
         public string username { get; set; }
         [XmlAttribute("RoleName")]
         public string rolename { get; set; }
+
+        public string token { get; set; }
 
         public string loginguid { get; set; }
     }
@@ -221,8 +223,8 @@ namespace GetPDMObject
 
         [XmlElement("MENUS")]
         public XmlResultMenu menu { get; set; }
-        [XmlElement("CONTROL")]
-        public List<XmlResultControl> controls { get; set; }
+        [XmlElement("ROW")]
+        public List<XmlResultDataRow> rows { get; set; }
         [XmlElement("TREEVIEW")]
         public XmlResultTreeView treeview { get; set; }
         [XmlElement("TREE")]
@@ -251,6 +253,12 @@ namespace GetPDMObject
         public string guid { get; set; }
         [XmlAttribute("NAME")]
         public string label { get; set; }
+        [XmlAttribute("SIZE")]
+        public string size { get; set; }
+        [XmlAttribute("CLASS")]
+        public string type { get; set; }
+        [XmlAttribute("MODDATE")]
+        public string modDate { get; set; }
         [XmlAttribute("IMG")]
         public string img { get; set; }
         [XmlAttribute("ISNODES")]
@@ -264,6 +272,13 @@ namespace GetPDMObject
         public List<XmlResultMenu> menu { get; set; }
         [XmlElement("TREE")]
         public List<XmlResultTree> children { get; set; }
+    }
+
+    [XmlRoot(ElementName = "ROW")]
+    public class XmlResultDataRow
+    {
+        [XmlElement("CONTROL")]
+        public List<XmlResultControl> controls;
     }
 
     [XmlRoot(ElementName = "CONTROL")]
@@ -285,6 +300,8 @@ namespace GetPDMObject
         public string isRequired { get; set; }
         [XmlAttribute("READONLY")]
         public string isReadonly { get; set; }
+        [XmlAttribute("MULTISELECT")]
+        public string isMulti { get; set; }
         [XmlAttribute("COL")]
         public int col { get; set; }
         [XmlAttribute("HEIGHT")]
@@ -337,5 +354,20 @@ namespace GetPDMObject
         public string path { get; set; }
     }
 
+    [XmlRoot(ElementName = "REVALUE")]
+    public class XmlResultMessages
+    {
+        [XmlElement("NOTIFY")]
+        public List<XmlResultMessage> messages { get; set; }
+    }
+
+    [XmlRoot(ElementName = "NOTIFY")]
+    public class XmlResultMessage
+    {
+        [XmlElement("TITLE")]
+        public string title { get; set; }
+        [XmlElement("MSG")]
+        public string msg { get; set; }
+    }
 
 }
