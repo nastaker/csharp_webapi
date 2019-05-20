@@ -3,6 +3,46 @@ using System.Xml.Serialization;
 
 namespace GetPDMObject
 {
+
+    public class ResultInfo<T>
+    {
+        public string msg { get; set; }
+        public string code { get; set; }
+        public T obj { get; set; }
+
+        public static ResultInfo<T> Parse(string msg, string code, T obj)
+        {
+            return new ResultInfo<T>
+            {
+                msg = msg,
+                code = code,
+                obj = obj
+            };
+        }
+    }
+
+    [XmlRoot(ElementName = "RES")]
+    public class XmlResult
+    {
+        [XmlElement("RECODE")]
+        public string recode { get; set; }
+        [XmlElement("REVALUE")]
+        public object revalue { get; set; }
+        [XmlElement("ERR")]
+        public string err { get; set; }
+    }
+
+    [XmlRoot(ElementName = "OBJ")]
+    public class XmlResultFile
+    {
+        [XmlElement("TYPE")]
+        public string type { get; set; }
+        [XmlElement("NAME")]
+        public string name { get; set; }
+        [XmlElement("PATH")]
+        public string path { get; set; }
+    }
+
     [XmlRoot(ElementName = "FORM")]
     public class XmlResultForm
     {
@@ -14,6 +54,8 @@ namespace GetPDMObject
         public string name { get; set; }
         [XmlAttribute("SHOW")]
         public string show { get; set; }
+        [XmlAttribute("SHOWBUTTON")]
+        public string showButton { get; set; }
         [XmlAttribute("WIDTH")]
         public string width { get; set; }
         [XmlAttribute("HEIGHT")]
@@ -48,6 +90,10 @@ namespace GetPDMObject
         public string label { get; set; }
         [XmlAttribute("COLTYPE")]
         public string type { get; set; }
+        [XmlAttribute("DEFVALUE")]
+        public string defValue { get; set; }
+        [XmlAttribute("MUST")]
+        public string isRequired { get; set; }
         [XmlAttribute("SHOW")]
         public string isDisplay { get; set; }
         [XmlAttribute("ORDER")]
@@ -62,6 +108,9 @@ namespace GetPDMObject
         public string align { get; set; }
         [XmlAttribute("WIDTH")]
         public string width { get; set; }
+
+        [XmlElement("ITEM")]
+        public List<XmlResultControlItem> items { get; set; }
     }
 
     [XmlRoot(ElementName = "MENUS")]
@@ -129,17 +178,6 @@ namespace GetPDMObject
         public List<XmlResultMenuAction> actions { get; set; }
     }
 
-    [XmlRoot(ElementName = "RES")]
-    public class XmlResult
-    {
-        [XmlElement("RECODE")]
-        public string recode { get; set; }
-        [XmlElement("REVALUE")]
-        public object revalue { get; set; }
-        [XmlElement("ERR")]
-        public string err { get; set; }
-    }
-
     [XmlRoot(ElementName = "USER")]
     public class XmlResultUserLogin
     {
@@ -149,6 +187,8 @@ namespace GetPDMObject
         public string username { get; set; }
         [XmlAttribute("RoleName")]
         public string rolename { get; set; }
+        [XmlAttribute("USERIMG")]
+        public string avatar { get; set; }
 
         public string token { get; set; }
 
@@ -242,6 +282,8 @@ namespace GetPDMObject
         public string name { get; set; }
         [XmlAttribute("CON")]
         public string con { get; set; }
+        [XmlAttribute("ALLOWMOVE")]
+        public string canDrag { get; set; }
     }
 
     [XmlRoot(ElementName = "TREE")]
@@ -263,6 +305,10 @@ namespace GetPDMObject
         public string img { get; set; }
         [XmlAttribute("ISNODES")]
         public string hasChildren { get; set; }
+        [XmlAttribute("ALLOWMOVE")]
+        public string canDrag { get; set; }
+        [XmlAttribute("ALLOWADD")]
+        public string canDragIn { get; set; }
         [XmlAttribute("BACKCOLOR")]
         public string bgColor { get; set; }
         [XmlAttribute("FORCOLOR")]
@@ -332,6 +378,15 @@ namespace GetPDMObject
         public XmlResultTree tree { get; set; }
     }
 
+    [XmlRoot(ElementName = "REVALUE")]
+    public class XmlResultDataTree
+    {
+        [XmlElement("TREEVIEW")]
+        public XmlResultTreeView treeview { get; set; }
+        [XmlElement("TREE")]
+        public List<XmlResultTree> tree { get; set; }
+    }
+
     [XmlRoot(ElementName = "ROW")]
     public class XmlResultRow
     {
@@ -343,17 +398,6 @@ namespace GetPDMObject
         public List<XmlResultDataRowData> rowdata { get; set; }
     }
     
-    [XmlRoot(ElementName = "OBJ")]
-    public class XmlResultFile
-    {
-        [XmlElement("TYPE")]
-        public string type { get; set; }
-        [XmlElement("NAME")]
-        public string name { get; set; }
-        [XmlElement("PATH")]
-        public string path { get; set; }
-    }
-
     [XmlRoot(ElementName = "REVALUE")]
     public class XmlResultMessages
     {

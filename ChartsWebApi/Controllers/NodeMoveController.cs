@@ -1,4 +1,8 @@
-﻿using ChartsWebApi.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml;
 using GetPDMObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -6,19 +10,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Security.Claims;
-using System.Xml;
 
 namespace ChartsWebApi.Controllers
 {
     [Authorize]
     [EnableCors("CorsGuowenyan")]
     [Route("api/[controller]")]
-    public class UrlController : Controller
+    [ApiController]
+    public class NodeMoveController : Controller
     {
-        // POST: api/Url
+        // POST api/data
         [HttpPost]
-        public ActionResult Post([FromBody] JToken token)
+        public ActionResult Post([FromBody]JToken token)
         {
             string loginguid = string.Empty;
             HttpContext.Request.Cookies.TryGetValue("loginguid", out loginguid);

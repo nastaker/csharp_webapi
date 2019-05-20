@@ -24,7 +24,7 @@ namespace ChartsWebApi.Controllers
             {
                 loginguid = loginguid
             };
-            XmlResultUserRole role = PDMUtils.getRole(xmlGet);
+            var role = PDMUtils.getRole(xmlGet);
             return Json(role);
         }
     }

@@ -49,7 +49,7 @@ namespace ChartsWebApi.Controllers
                 loginguid = loginguid,
                 obj = node
             };
-            XmlResultData result = PDMUtils.modifyFormData(xmlset);
+            var result = PDMUtils.modifyFormData(xmlset);
             return Json(result);
         }
     }

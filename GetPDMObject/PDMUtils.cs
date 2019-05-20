@@ -9,7 +9,7 @@ namespace GetPDMObject
 {
     public class PDMUtils
     {
-        public static XmlResultUserLogin login(string login, string pwd, string proname)
+        public static ResultInfo<XmlResultUserLogin> login(string login, string pwd, string proname)
         {
             XmlUser xmlUser = new XmlUser
             {
@@ -19,157 +19,161 @@ namespace GetPDMObject
             };
             XmlDocument xmlDoc = OiEmData.Org_UserLogin(SerializeToXmlDocument(xmlUser) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new Exception(xmlResult.err);
-            }
             XmlResultUserLogin xmlResultUser = DeserializeXmlDocument(typeof(XmlResultUserLogin), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserLogin;
             xmlResultUser.loginguid = (xmlResult.revalue as XmlNode[])[1].InnerText;
-            return xmlResultUser;
+            return new ResultInfo<XmlResultUserLogin>
+            {
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = xmlResultUser
+            };
         }
 
-        public static List<XmlResultMessage> getMessage(XmlGet xmlget)
+        public static ResultInfo<XmlResultMessages> getMessage(XmlGet xmlget)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetMsg(SerializeToXmlDocument(xmlget) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new Exception(xmlResult.err);
-            } 
             XmlResultMessages msgs = (DeserializeXmlDocument(typeof(XmlResultMessages), ConvertToXmlNode(xmlResult.revalue)) as XmlResultMessages);
-            if (msgs == null)
+            return new ResultInfo<XmlResultMessages>
             {
-                return null;
-            }
-            return msgs.messages;
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = msgs
+            };
         }
 
-        public static List<XmlResultMenu> getMenu(XmlGet xmlget)
+        public static ResultInfo<XmlResultFile> getDownload(XmlDocument doc)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_SetAction(doc);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            XmlResultFile file =  DeserializeXmlDocument(typeof(XmlResultFile), (xmlResult.revalue as XmlNode[])[0]) as XmlResultFile;
+            return new ResultInfo<XmlResultFile>
+            {
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = file
+            };
+        }
+
+        public static ResultInfo<List<XmlResultMenu>> getMenu(XmlGet xmlget)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetMyMenu(SerializeToXmlDocument(xmlget) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new Exception(xmlResult.err);
-            }
             XmlResultMenu menu = DeserializeXmlDocument(typeof(XmlResultMenu), ConvertToXmlNode(xmlResult.revalue, "MENUS")) as XmlResultMenu;
-            return menu.children;
+            return new ResultInfo<List<XmlResultMenu>>
+            {
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = menu.children
+            };
         }
 
-        public static List<XmlResultMenu> changeRole(XmlSet xmlSet)
+        public static ResultInfo<List<XmlResultMenu>> changeRole(XmlSet xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new Exception(xmlResult.err);
-            }
             XmlResultMenu menu = DeserializeXmlDocument(typeof(XmlResultMenu), ConvertToXmlNode(xmlResult.revalue, "MENUS")) as XmlResultMenu;
-            return menu.children;
+            return new ResultInfo<List<XmlResultMenu>>
+            {
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = menu.children
+            };
         }
 
-        public static XmlResultUserRole getRole(XmlGet xmlget)
+        public static ResultInfo<XmlResultUserRole> getRole(XmlGet xmlget)
         {
             //获取权限
             XmlDocument xmlDoc = OiEmData.Org_GetMyNodes(SerializeToXmlDocument(xmlget) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
+            var role = DeserializeXmlDocument(typeof(XmlResultUserRole), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserRole;
+            return new ResultInfo<XmlResultUserRole>
             {
-                throw new Exception(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultUserRole), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserRole;
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = role
+            };
         }
 
-        public static XmlResultData modifyFormData(XmlSet xmlSet)
+        public static ResultInfo<XmlResultData> modifyFormData(XmlSet xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetDataRow(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
+            var result = DeserializeXmlDocument(typeof(XmlResultData), ConvertToXmlNode(xmlResult.revalue)) as XmlResultData;
+            return new ResultInfo<XmlResultData>
             {
-                throw new Exception(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultData), ConvertToXmlNode(xmlResult.revalue)) as XmlResultData;
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = result
+            };
         }
 
-        public static XmlResult delete(XmlSet xmlSet)
-        {
-            XmlDocument xmlDoc = OiEmData.Org_DeleteDataRow(SerializeToXmlDocument(xmlSet) as XmlDocument);
-            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new Exception(xmlResult.err);
-            }
-            return xmlResult;
-        }
-
-        public static XmlResultDataTable getDataRows(XmlGet xmlSet)
+        public static ResultInfo<XmlResultDataTable> getDataRows(XmlGet xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetGridValue(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
+            var dataTable = DeserializeXmlDocument(typeof(XmlResultDataTable), (xmlResult.revalue as XmlNode[])[0]) as XmlResultDataTable;
+            return new ResultInfo<XmlResultDataTable>
             {
-                throw new Exception(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultDataTable), (xmlResult.revalue as XmlNode[])[0]) as XmlResultDataTable;
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = dataTable
+            };
         }
 
-        public static XmlResultForm setAction(XmlSet xmlSet)
+        public static ResultInfo<XmlResultForm> setAction(XmlSet xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(SerializeToXmlDocument(xmlSet) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
+            var XmlResultForm = DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
+            return new ResultInfo<XmlResultForm>
             {
-                throw new Exception(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = XmlResultForm
+            };
         }
 
-        public static XmlResultForm setAction(XmlDocument xmlSet)
+        public static ResultInfo<XmlResultForm> setAction(XmlDocument xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
+            var xmlResultForm = DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
+            return new ResultInfo<XmlResultForm>
             {
-                throw new Exception(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultForm), (xmlResult.revalue as XmlNode[])[0]) as XmlResultForm;
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = xmlResultForm
+            };
         }
 
-        public static string getString(XmlDocument xmlSet)
+        public static ResultInfo<string> getString(XmlDocument xmlSet)
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
-            {
-                throw new Exception(xmlResult.err);
-            }
+            string url = string.Empty;
             if ((xmlResult.revalue as XmlNode[])[0] != null){
-                return (xmlResult.revalue as XmlNode[])[0].InnerText;
+                url = (xmlResult.revalue as XmlNode[])[0].InnerText;
             }
-            return string.Empty;
-        }
-
-        public static XmlResultFile getDownload(XmlDocument xmlSet)
-        {
-            XmlDocument xmlDoc = OiProData.Pro_SetAction(xmlSet);
-            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
+            return new ResultInfo<string>
             {
-                throw new Exception(xmlResult.err);
-            }
-            return DeserializeXmlDocument(typeof(XmlResultFile), (xmlResult.revalue as XmlNode[])[0]) as XmlResultFile;
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = url
+            };
         }
-
-        public static List<XmlResultTree> getTreeNodes(XmlDocument doc)
+        
+        public static ResultInfo<XmlResultDataTree> getTreeNodes(XmlDocument doc)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetTreeNode(doc);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            if (xmlResult.recode != "0")
+            XmlResultDataTree tree = DeserializeXmlDocument(typeof(XmlResultDataTree), ConvertToXmlNode(xmlResult.revalue)) as XmlResultDataTree;
+            return new ResultInfo<XmlResultDataTree>
             {
-                throw new Exception(xmlResult.err);
-            }
-            XmlResultTree tree = DeserializeXmlDocument(typeof(XmlResultTree), ConvertToXmlNode(xmlResult.revalue, "TREE")) as XmlResultTree;
-            return tree.children;   
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = tree
+            };
         }
 
         public static XmlNode ConvertToXmlNode(object obj, string root = "REVALUE")

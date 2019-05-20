@@ -6,7 +6,7 @@ namespace ChartsWebApi.ViewModel
     {
         //用户名
         [Required]
-        public string User { get; set; }
+        public string Username { get; set; }
         //密码
         [Required]
         public string Password { get; set; }

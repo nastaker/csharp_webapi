@@ -11,7 +11,7 @@ namespace ChartsWebApi.Services
 {
     public interface IUserService
     {
-        XmlResultUserLogin Authenticate(string username, string password);
+        ResultInfo<XmlResultUserLogin> Authenticate(string username, string password);
     }
 
     public class UserService : IUserService
@@ -23,9 +23,10 @@ namespace ChartsWebApi.Services
             _jwtSettings = jwtSettings.Value;
         }
 
-        public XmlResultUserLogin Authenticate(string username, string password)
+        public ResultInfo<XmlResultUserLogin> Authenticate(string username, string password)
         {
-            XmlResultUserLogin user = PDMUtils.login(username, password, "chpdms");
+            ResultInfo<XmlResultUserLogin> result = PDMUtils.login(username, password, "chpdms");
+            var user = result.obj;
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
@@ -43,7 +44,7 @@ namespace ChartsWebApi.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             user.token = tokenHandler.WriteToken(token);
 
-            return user;
+            return result;
         }
     }
 }

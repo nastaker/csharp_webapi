@@ -26,6 +26,7 @@ namespace ChartsWebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string currConfig = Configuration["CurrConfig"];
             services.AddMvc()
                     .AddJsonOptions( options =>
                     {
@@ -35,7 +36,7 @@ namespace ChartsWebApi
             services.AddMemoryCache();
             services.AddCors(options =>
                 options.AddPolicy("CorsGuowenyan", 
-                p => p.WithOrigins(Configuration["Cors:Origins:Guowenyan"])
+                p => p.WithOrigins(Configuration[$"{currConfig}:Cors:Origins"])
                       .AllowCredentials()
                       .AllowAnyMethod()
                       .AllowAnyHeader()

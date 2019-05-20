@@ -23,8 +23,8 @@ namespace ChartsWebApi.Controllers
             {
                 loginguid = loginguid
             };
-            List<XmlResultMenu> menulist = PDMUtils.getMenu(xmlGet);
-            return Json(menulist);
+            var result = PDMUtils.getMenu(xmlGet);
+            return Json(result);
         }
 
         // POST api/values

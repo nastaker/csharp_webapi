@@ -26,9 +26,9 @@ namespace ChartsWebApi.Controllers
             {
                 return BadRequest();
             }
-            XmlResultUserLogin user = _userService.Authenticate(loginViewModel.User, loginViewModel.Password);
+            var result = _userService.Authenticate(loginViewModel.Username, loginViewModel.Password);
 
-            return Ok(user);
+            return Ok(result);
         }
     }
 }
