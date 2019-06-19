@@ -26,6 +26,10 @@ namespace ChartsWebApi.Services
         public ResultInfo<XmlResultUserLogin> Authenticate(string username, string password)
         {
             ResultInfo<XmlResultUserLogin> result = PDMUtils.login(username, password, "chpdms");
+            if (result.code != "0")
+            {
+                return result;
+            }
             var user = result.obj;
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();

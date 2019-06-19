@@ -20,7 +20,6 @@ namespace GetPDMObject
             XmlDocument xmlDoc = OiEmData.Org_UserLogin(SerializeToXmlDocument(xmlUser) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             XmlResultUserLogin xmlResultUser = DeserializeXmlDocument(typeof(XmlResultUserLogin), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserLogin;
-            xmlResultUser.loginguid = (xmlResult.revalue as XmlNode[])[1].InnerText;
             return new ResultInfo<XmlResultUserLogin>
             {
                 code = xmlResult.recode,
@@ -46,7 +45,20 @@ namespace GetPDMObject
         {
             XmlDocument xmlDoc = OiProData.Pro_SetAction(doc);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
-            XmlResultFile file =  DeserializeXmlDocument(typeof(XmlResultFile), (xmlResult.revalue as XmlNode[])[0]) as XmlResultFile;
+            XmlResultFile file = DeserializeXmlDocument(typeof(XmlResultFile), (xmlResult.revalue as XmlNode[])[0]) as XmlResultFile;
+            return new ResultInfo<XmlResultFile>
+            {
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = file
+            };
+        }
+
+        public static ResultInfo<XmlResultFile> getExportData(XmlGet xmlget)
+        {
+            XmlDocument xmlDoc = OiProData.Pro_GridDataOut(SerializeToXmlDocument(xmlget) as XmlDocument);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            XmlResultFile file = DeserializeXmlDocument(typeof(XmlResultFile), (xmlResult.revalue as XmlNode[])[0]) as XmlResultFile;
             return new ResultInfo<XmlResultFile>
             {
                 code = xmlResult.recode,
@@ -216,6 +228,17 @@ namespace GetPDMObject
             return xmlDoc.OuterXml;
         }
 
+        public static string login(string login, string pwd, string proname, bool test)
+        {
+            XmlUser xmlUser = new XmlUser
+            {
+                login = login,
+                psw = pwd,
+                proname = proname
+            };
+            XmlDocument xmlDoc = OiEmData.Org_UserLogin(SerializeToXmlDocument(xmlUser) as XmlDocument);
+            return xmlDoc.OuterXml;
+        }
         #endregion
 
         public static XmlNode SerializeToXmlDocument(object input)

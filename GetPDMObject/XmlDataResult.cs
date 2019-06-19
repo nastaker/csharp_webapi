@@ -192,6 +192,7 @@ namespace GetPDMObject
 
         public string token { get; set; }
 
+        [XmlElement("LOGINGUID")]
         public string loginguid { get; set; }
     }
 
