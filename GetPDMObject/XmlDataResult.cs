@@ -19,6 +19,25 @@ namespace GetPDMObject
                 obj = obj
             };
         }
+
+        public static ResultInfo<T> Success(T obj)
+        {
+            return new ResultInfo<T>
+            {
+                msg = string.Empty,
+                code = "0",
+                obj = obj
+            };
+        }
+
+        public static ResultInfo<T> Fail(string code, string msg)
+        {
+            return new ResultInfo<T>
+            {
+                msg = msg,
+                code = code
+            };
+        }
     }
 
     [XmlRoot(ElementName = "RES")]

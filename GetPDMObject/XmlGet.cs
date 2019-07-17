@@ -24,4 +24,37 @@ namespace GetPDMObject
         [XmlElement("LOGINGUID")]
         public string loginguid { get; set; }
     }
+
+    [XmlRoot("OBJ")]
+    public class XmlUserRegist
+    {
+        [XmlElement("CLASSNAME")]
+        public string classname { get; set; }
+        [XmlElement("GUID")]
+        public string guid { get; set; }
+        [XmlElement("CN_TYPE")]
+        public string type { get; set; }
+        [XmlElement("CN_PAR_CLASS")]
+        public string parentClass { get; set; }
+        [XmlElement("CN_PAR_GUID")]
+        public string parentGuid { get; set; }
+        [XmlElement("CN_LOGIN")]
+        public string login { get; set; }
+        [XmlElement("CN_USER_NAME")]
+        public string username { get; set; }
+        [XmlElement("cn_psw")]
+        public string password { get; set; }
+        [XmlElement("CN_PSW2")]
+        public string repeatPassword { get; set; }
+        [XmlElement("CN_ORDER")]
+        public string order { get; set; }
+        [XmlElement("CN_USERCODE")]
+        public string usercode { get; set; }
+        [XmlElement("CN_PHONE")]
+        public string phone { get; set; }
+        [XmlElement("CN_EMAIL")]
+        public string email { get; set; }
+        [XmlElement("CN_DESC")]
+        public string desc { get; set; }
+    }
 }
