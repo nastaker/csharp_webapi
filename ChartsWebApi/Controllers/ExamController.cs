@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using ChartsWebApi.models;
+﻿using ChartsWebApi.models;
 using ChartsWebApi.ViewModel;
 using GetPDMObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace ChartsWebApi.Controllers
 {
@@ -19,6 +19,7 @@ namespace ChartsWebApi.Controllers
     {
         private DataContext db;
         private const string DICT_KEY_MAX_EXAM_COUNT = "MAXNUM";
+        private const string DICT_KEY_EXAM_PART_COUNT = "PARTNUM";
 
         private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -72,85 +73,94 @@ namespace ChartsWebApi.Controllers
             {
                 return Json(ResultInfo<string>.Fail("4001", "获取考试分数字典信息失败"));
             }
-            decimal partMaxScore = 0;
-            decimal.TryParse(dictExamScorePart.Value, out partMaxScore);
-            // 获取buildItem表
-            List<BuildItem> buildItems = db.BuildItem.Where(bi => bi.PartId == exam.BuildPartId).ToList();
+            // 总分
+            decimal totalScore = 0;
+            decimal.TryParse(dictExamScorePart.Value, out totalScore);
+            // 获取考试详情，里面存放了考生本次考试的题目（当前设定为两个）
+            List<ExamPart> examParts = db.ExamPart.Where(ep => ep.ExamId == exam.Id).ToList();
+
             // 错误列表
-            List<Exam01Bom> emptyItems = new List<Exam01Bom>();
-            // 获取bom表
-            List<Exam01Bom> boms = db.Exam01Bom.Where(eb => eb.ExamId == examId).ToList();
-            //每条数据的分值为 -  30 / BuildItem总条数
-            decimal itemScore = -1 * partMaxScore / buildItems.Count();
-            // 循环BOM表
-            for(int i = 0; i < boms.Count; i++)
+            List<Exam01Bom> errors = new List<Exam01Bom>();
+            // 获取考生回答
+            List<Exam01Bom> answers = db.Exam01Bom.Where(eb => eb.ExamId == examId).ToList();
+            // 循环考试的题目
+            for (int x = 0; x < examParts.Count; x++)
             {
-                Exam01Bom bom = boms[i];
-                if (string.IsNullOrWhiteSpace(bom.Part) && string.IsNullOrWhiteSpace(bom.Item))
+                ExamPart examPart = examParts[x];
+                // 获取此题目的标准答案
+                List<BuildItem> standardAnswer = db.BuildItem.Where(bi => bi.PartId == examPart.PartId).ToList();
+                // 每条数据的分值为 总分(totalScore) / 标准答案总条数
+                decimal itemScore = -1 * totalScore / standardAnswer.Count();
+                // 循环考生的回答
+                for (int i = answers.Count - 1,j = 0; j <= i; i--)
                 {
-                    // 从总分中扣除此项分数，理由：未填写
-                    partMaxScore += itemScore;
-                    bom.Score = itemScore;
-                    bom.Desc = "填入了空内容";
-                }
-                bom.Part = bom.Part.Trim();
-                bom.Item = bom.Item.Trim();
-                // 循环BuildItem表（正确答案）
-                for (int j = 0; j < buildItems.Count; j++)
-                {
-                    BuildItem item = buildItems[j];
-                    if (item.isMapped)
+                    Exam01Bom answer = answers[i];
+                    if (string.IsNullOrWhiteSpace(answer.Part) && string.IsNullOrWhiteSpace(answer.Item))
                     {
-                        continue;
+                        // 从总分中扣除此项分数，理由：未填写
+                        totalScore += itemScore;
+                        answer.Score = itemScore;
+                        answer.Desc = "填入了空内容";
                     }
-                    if (bom.Part == item.PartName || bom.Part == item.PartNameAlias1 || bom.Part == item.PartNameAlias2)
+                    answer.Part = answer.Part.Trim();
+                    answer.Item = answer.Item.Trim();
+                    for (int a = 0, b = standardAnswer.Count; a < b; a++)
                     {
-                        if (bom.Item == item.Name || bom.Item == item.NameAlias1 || bom.Item == item.NameAlias2)
+                        BuildItem item = standardAnswer[a];
+                        if (answer.Part == item.PartName.Trim() || answer.Part == item.PartNameAlias1.Trim() || answer.Part == item.PartNameAlias2.Trim())
                         {
-                            // 正确，跳出循环
-                            bom.isMapped = true;
-                            item.isMapped = true;
-                            continue;
+                            if (answer.Item == item.Name.Trim() || answer.Item == item.NameAlias1.Trim() || answer.Item == item.NameAlias2.Trim())
+                            {
+                                // 将考生的回答移除（防止再次匹配到）
+                                answers.Remove(answer);
+                                // 将正确答案从答案列表中移除（防止再次匹配到）
+                                standardAnswer.Remove(item);
+                                // 正确，跳出循环
+                                break;
+                            }
                         }
                     }
                 }
-                if (!bom.isMapped)
+                if (x + 1 < examParts.Count)
                 {
-                    // 从总分中扣除此项分数
-                    partMaxScore += itemScore;
-                    bom.Score = itemScore;
-                    bom.Desc = "填写错误";
+                    // 判断循环是否结束，最后一次循环再执行下面语句
+                    continue;
                 }
-            }
-            // 循环BuildItem表，查找未被mapped的，全部统一扣分
-            for (int i = 0; i < buildItems.Count; i++)
-            {
-                if (!buildItems[i].isMapped)
+                // 循环结束后，仍有剩余回答，将多余回答分值扣除
+                for (int i = 0; i < answers.Count; i++)
+                {
+                    Exam01Bom answer = answers[i];
+                    answer.Desc = "填写错误";
+                    answer.Score = itemScore;
+                }
+                // 循环结束后，仍有剩余答案，将剩余答案分值扣除
+                for (int i = 0; i < standardAnswer.Count; i++)
                 {
                     // 加入错误列表中
-                    emptyItems.Add(new Exam01Bom
+                    errors.Add(new Exam01Bom
                     {
                         ExamId = exam.Id,
-                        Part = buildItems[i].PartName,
-                        Item = buildItems[i].Name,
+                        Part = standardAnswer[i].PartName,
+                        Item = standardAnswer[i].Name,
                         Score = itemScore,
                         Desc = "未填写",
                         Order = 99999
                     });
                     // 从总分中扣除此项分数
-                    partMaxScore += itemScore;
+                    totalScore += itemScore;
                 }
             }
+            
             // 不允许负分
-            if (partMaxScore < 0)
+            if (totalScore < 0)
             {
-                partMaxScore = 0;
+                totalScore = 0;
             }
             // 判分
-            bill.Score = partMaxScore;
+            bill.Score = totalScore;
             exam.Score = bill.Score;
             exam.Status = "阅卷中";
-            db.Exam01Bom.AddRange(emptyItems);
+            db.Exam01Bom.AddRange(errors);
             db.SaveChanges();
             return Json(ResultInfo<string>.Success("您已成功交卷！"));
         }
@@ -235,9 +245,9 @@ namespace ChartsWebApi.Controllers
                 Dict dictQualifyScore = db.Dict.Where(d => d.Key == "EXAM_QUALIFY_01").FirstOrDefault();
                 if (dictQualifyScore == null)
                 {
-                    // 判断是否已经全部评分了，如果全部评完，返回一个分数
                     return Json(ResultInfo<object>.Fail("2000", "没有获取到及格分数字典数据！"));
                 }
+                // 判断是否已经全部评分了，如果全部评完，返回一个分数
                 int.TryParse(dictQualifyScore.Value, out qualifyScore);
                 if (score >= qualifyScore)
                 {
@@ -248,6 +258,7 @@ namespace ChartsWebApi.Controllers
                     exam.Status = "不及格";
                 }
             }
+            db.SaveChanges();
             // 判断是否已经全部评分了，如果全部评完，返回一个分数
             return Json(ResultInfo<object>.Success(new
             {
@@ -351,6 +362,8 @@ namespace ChartsWebApi.Controllers
             }
             // 提前建立BILL表数据
             List<Exam02Bill> bills = null;
+            // 提前建立考试部位数据
+            List<ExamPart> examParts = null;
             // 判断是否有正在进行中的
             List<Exam> examing = examed.Where(ea => ea.Status == "进行中").ToList();
             int time = GetExamTimeByType(data.Type);
@@ -381,7 +394,12 @@ namespace ChartsWebApi.Controllers
                     else
                     {
                         // 未超时，将此条记录直接返回
-                        return Json(ResultInfo<Exam>.Success(examing[i]));
+                        examParts = db.ExamPart.Where(ep => ep.ExamId == examing[i].Id).ToList();
+                        return Json(ResultInfo<object>.Success(new
+                        {
+                            exam = examing[i],
+                            examParts
+                        }));
                     }
                 }
             }
@@ -391,8 +409,6 @@ namespace ChartsWebApi.Controllers
             {
                 examType = "B";
             }
-            // 考过的试
-            List<Exam> examedList = examed.ToList();
             // 新建Exam数据
             Exam exam = new Exam
             {
@@ -404,25 +420,64 @@ namespace ChartsWebApi.Controllers
                 UserName = user.Username
             };
             bills = new List<Exam02Bill>();
-            // 判断考试类型，如果需要随机
+            examParts = new List<ExamPart>();
             if (data.Type == "测稿编绘")
             {
-                // 将考过的排除
-                List<BuildItem> buildList = buildItem.Where(bi =>
+                // 如果是测稿编绘，必须要有题目，如果没有题目考试不进行创建
+                if (buildItem.Count == 0)
                 {
-                    return !examedList.Exists(ea => ea.BuildPartCode == bi.Code);
-                }).ToList();
-                // 随机其中一种，新建数据到Exam表
-                int random = new Random().Next(buildList.Count);
-                BuildItem build = buildList[random];
-
-                exam.BuildPartId = build.Id;
-                exam.BuildPartCode = build.Code;
-                exam.BuildPartName = build.Name;
+                    return Json(ResultInfo<string>.Fail("1002", "没有获取到考试题目，请联系管理员。"));
+                }
             }
+            // 可以新建出考试了
             db.Exam.Add(exam);
             db.SaveChanges();
-            if (data.Type == "虚拟测量")
+            if (data.Type == "测稿编绘")
+            {
+                // 随机挑选其中DICT_KEY_EXAM_PART_NUM个，新建数据到ExamPart表
+                int partCount = GetExamPartCount();
+                for (int i = 0; i < partCount; i++)
+                {
+                    // 随机其中的任意部件
+                    int index = new Random().Next(buildItem.Count);
+                    BuildItem build = buildItem[index];
+                    // 将选取的部件添加到examParts
+                    examParts.Add(new ExamPart
+                    {
+                        ExamId = exam.Id,
+                        PartId = build.Id,
+                        PartCode = build.Code,
+                        PartName = build.Name
+                    });
+                    // 从build_item_list中移除这个部件
+                    buildItem.Remove(build);
+                }
+                // 添加EXAM_01_BILL表数据：01 构建表，02 虚拟照片，03 草图绘制
+                List<Exam01Bill> exam01Bills = new List<Exam01Bill>();
+                exam01Bills.Add(new Exam01Bill
+                {
+                    ExamId = exam.Id,
+                    Code = "01",
+                    Name = "构建表"
+                });
+
+                exam01Bills.Add(new Exam01Bill
+                {
+                    ExamId = exam.Id,
+                    Code = "02",
+                    Name = "虚拟照片"
+                });
+
+                exam01Bills.Add(new Exam01Bill
+                {
+                    ExamId = exam.Id,
+                    Code = "03",
+                    Name = "草图绘制"
+                });
+                db.ExamPart.AddRange(examParts);
+                db.Exam01Bill.AddRange(exam01Bills);
+            }
+            else if (data.Type == "虚拟测量")
             {
                 // 获取SURVEY表数据
                 List<BuildSurvey> surveys = db.BuildSurvey.ToList();
@@ -437,44 +492,8 @@ namespace ChartsWebApi.Controllers
                     });
                 }
                 db.Exam02Bill.AddRange(bills);
-                if (examType == "B")
-                {
-                    // 获取所有用户名
-                    IEnumerable<string> names = data.GroupUsers.Select(gu => gu.Name);
-                    // 获取所有用户ID
-                    IEnumerable<int> ids = data.GroupUsers.Select(gu => gu.Id);
-                    //组队试验，加上组长的名字
-                    exam.GroupName = string.Format("{0},{1}", user.Name, string.Join(",", names));
-                    //
-                }
             }
-            else if (data.Type == "测稿编绘")
-            {
-                // 添加EXAM_01_BILL表数据：01 构建表，02 虚拟照片，03 草图绘制
-                List<Exam01Bill> bills1 = new List<Exam01Bill>();
-                bills1.Add(new Exam01Bill
-                {
-                    ExamId = exam.Id,
-                    Code = "01",
-                    Name = "构建表"
-                });
-
-                bills1.Add(new Exam01Bill
-                {
-                    ExamId = exam.Id,
-                    Code = "02",
-                    Name = "虚拟照片"
-                });
-
-                bills1.Add(new Exam01Bill
-                {
-                    ExamId = exam.Id,
-                    Code = "03",
-                    Name = "草图绘制"
-                });
-                db.Exam01Bill.AddRange(bills1);
-            }
-            if (data.GroupUsers != null && data.GroupUsers.Count > 0)
+            if (examType == "B")
             {
                 // 新增group表数据
                 List<ExamGroup> examGroups = new List<ExamGroup>();
@@ -493,6 +512,14 @@ namespace ChartsWebApi.Controllers
                         UserName = gu.Name
                     });
                 });
+
+                // 获取所有用户名
+                IEnumerable<string> names = data.GroupUsers.Select(gu => gu.Name);
+                // 获取所有用户ID
+                IEnumerable<int> ids = data.GroupUsers.Select(gu => gu.Id);
+                //组队试验，加上组长的名字
+                exam.GroupName = string.Format("{0},{1}", user.Name, string.Join(",", names));
+
                 db.ExamGroup.AddRange(examGroups);
             }
             db.SaveChanges();
@@ -507,9 +534,17 @@ namespace ChartsWebApi.Controllers
                     bills
                 }));
             }
+            else if (data.Type == "测稿编绘")
+            {
+                return Json(ResultInfo<object>.Success(new
+                {
+                    exam,
+                    examParts
+                }));
+            }
             else
             {
-                return Json(ResultInfo<Exam>.Success(exam));
+                return Json(ResultInfo<object>.Fail("9001", "未能获取到考试类型"));
             }
         }
 
@@ -517,7 +552,6 @@ namespace ChartsWebApi.Controllers
         {
             // 获取考试时间
             List<Dict> dicts = db.Dict.Where(d => d.Key == "EXAM_TIME_01" || d.Key == "EXAM_TIME_02").ToList();
-            //
             int time = 0;
             var dict = dicts.Where(d =>
             {
@@ -534,21 +568,37 @@ namespace ChartsWebApi.Controllers
                     return false;
                 }
             }).FirstOrDefault();
+            if (dict == null)
+            {
+                return time;
+            }
             int.TryParse(dict.Value, out time);
             return time;
         }
 
-        [Route("getGroupUser/{login}")]
-        [HttpGet]
-        public ActionResult GetGroupUser(string login)
+        private int GetExamPartCount()
         {
-            OrgUser leader = db.OrgUser.Where(ou => ou.Login == login && ou.Status == "有效").FirstOrDefault();
+            Dict dict = db.Dict.Where(d => d.Key == DICT_KEY_EXAM_PART_COUNT).FirstOrDefault();
+            int count = 1;
+            if (dict == null)
+            {
+                return count;
+            }
+            int.TryParse(dict.Value, out count);
+            return count;
+        }
+
+        [Route("getGroupUser/{guid}")]
+        [HttpGet]
+        public ActionResult GetGroupUser(string guid)
+        {
+            OrgUser leader = db.OrgUser.Where(ou => ou.Guid == guid && ou.Status == "有效").FirstOrDefault();
             if (leader == null)
             {
                 return Json(ResultInfo<string>.Fail("1001", "组长信息获取失败！"));
             }
             // 根据组长的PAR_GUID获取所有可选择组员，不包含组长自己(默认已添加)
-            List<OrgUser> users = db.OrgUser.Where(ou => ou.Login != login && ou.ParGuid == leader.ParGuid && ou.Status == "有效").ToList();
+            List<OrgUser> users = db.OrgUser.Where(ou => ou.Guid != guid && ou.ParGuid == leader.ParGuid && ou.Status == "有效").ToList();
             // 返回组员信息
             return Json(ResultInfo<List<OrgUser>>.Success(users));
         }
@@ -609,19 +659,14 @@ namespace ChartsWebApi.Controllers
             }
             List<Exam01Bom> exam01Boms = new List<Exam01Bom>();
             List<Exam01BomImg> bomImages = new List<Exam01BomImg>();
-            string part = "";
             for (int i = 0, j = data.boms.Count; i < j; i++)
             {
                 var bom = data.boms[i];
-                if (!string.IsNullOrEmpty(bom.part))
-                {
-                    part = bom.part;
-                }
                 exam01Boms.Add(new Exam01Bom
                 {
                     ExamId = data.ExamId,
                     Item = bom.item,
-                    Part = part,
+                    Part = bom.part,
                     Desc1 = bom.desc1,
                     Desc2 = bom.desc2,
                     Order = i,
@@ -799,6 +844,30 @@ namespace ChartsWebApi.Controllers
             return Json(ResultInfo<List<BuildTool>>.Success(tools));
         }
 
+        [Route("getSelectedTools/{examid}")]
+        [HttpGet]
+        public ActionResult GetSelectedTools(int examid)
+        {
+            List<Exam02Tool> selectedTools = db.Exam02Tool.Where(et => et.ExamId == examid).ToList();
+            return Json(ResultInfo<List<Exam02Tool>>.Success(selectedTools));
+        }
+
+        [Route("getSurveyGroup/{groupid}")]
+        [HttpGet]
+        public ActionResult getSurveyGroup(int groupid)
+        {
+            BuildSurveyGroup surveygroup = db.BuildSurveyGroup.Where(sg => groupid == sg.Id).SingleOrDefault();
+            return Json(ResultInfo<object>.Success(surveygroup));
+        }
+
+        [Route("getSurveyGroupTools/{groupid}")]
+        [HttpGet]
+        public ActionResult getSurveyGroupTools(int groupid)
+        {
+            List<BuildSurveyGroupTool> surveygrouptools = db.BuildSurveyGroupTool.Where(gt => groupid == gt.GroupId).ToList();
+            return Json(ResultInfo<object>.Success(surveygrouptools));
+        }
+
         [Route("saveTools")]
         [HttpPost]
         public ActionResult SaveTools(ToolsInfo data)
@@ -815,35 +884,53 @@ namespace ChartsWebApi.Controllers
             }
             // 根据SURVEYID 查询正确工具组
             List<BuildSurveyGroup> groups = db.BuildSurveyGroup.Where(sg => sg.SurveyId == bill.SurveyId).ToList();
-            // 循环工具组，判断是否有对应上工具组的工具集
-            // 是否有正确答案，默认用户是错的，中间有一次正确，用户就正确。
-            bool isRightAnswer = false;
+            // 循环工具组
+            int groupid = 0;
             for (int i = 0, j = groups.Count; i < j; i++)
             {
                 BuildSurveyGroup group = groups[i];
-                // 首先，用户选择的工具的类型数量一定要对应上正确的工具的类型数量
+                // 获取工具组里面的工具列表
                 if (group.GroupTools == null)
                 {
                     group.GroupTools = db.BuildSurveyGroupTool.Where(gt => gt.GroupId == group.Id).ToList();
                 }
-                if (data.tools.Count != group.GroupTools.Count)
+                // 因为工具列表是每条一个，多个为多条数据
+                // 这里将相同类型工具多条数据合并为一条多个
+                List<GroupTool> groupTools = (from gt in @group.GroupTools
+                                        group gt by new
+                                        {
+                                            gt.GroupId,
+                                            gt.ToolId
+                                        } into gts
+                                        select new GroupTool
+                                        {
+                                            ToolId = gts.Key.ToolId,
+                                            GroupId = gts.Key.GroupId,
+                                            Count = gts.Count()
+                                        }).ToList();
+                // 判断数量，只能多选两种，如果超过了，换一个答案匹配
+                if (data.tools.Count - 2 > groupTools.Count)
                 {
-                    // 需要的工具类型数量都不一致，不可能正确，跳过此次循环。
                     continue;
                 }
-                // 循环用户选择的工具列表
-                for (int a = 0; a < data.tools.Count; a++)
+                int num = 0;
+                // 循环答案工具列表
+                for (int a = 0; a < groupTools.Count; a++)
                 {
-                    var tool = data.tools[a];
-                    //用户的工具类型和需要数量是否都在正确答案中？
-                    bool isFind = group.GroupTools.Exists(t => t.ToolId == tool.Id && t.Count == tool.count);
-                    if (!isFind)
+                    var tool = groupTools[a];
+                    //用户选择中是否有正确答案，计数+1，如果计数 = 正确答案数量即正确
+                    bool isFind = data.tools.Exists(t => t.Id == tool.ToolId && t.count == tool.Count);
+                    if (isFind)
                     {
-                        // 不正确，跳出
-                        break;
+                        // 正确 计数+1
+                        num += 1;
                     }
-                    // 能走到这里，代表正确
-                    isRightAnswer = true;
+                }
+                if (num == groupTools.Count)
+                {
+                    // 存储正确答案groupid
+                    groupid = group.Id;
+                    // 将没有选择的工具也扔到tools里
                 }
             }
 
@@ -868,7 +955,7 @@ namespace ChartsWebApi.Controllers
                 return Json(ResultInfo<string>.Fail("1001", "你正参加的考试不存在或已经结束，请询问管理员。"));
             }
 
-            if (!isRightAnswer)
+            if (groupid == 0)
             {
                 // 不及格
                 bill.Score = 0;
@@ -881,8 +968,10 @@ namespace ChartsWebApi.Controllers
 
             // 正确，判断除此次BILL外是否所有BILL都有SCORE了
             bool isPass = !db.Exam02Bill.Where(eb => eb.ExamId == exam.Id && eb.Id != bill.Id).ToList().Exists(eb => eb.Score == null);
+            bill.GroupId = groupid;
             bill.Score = 100;
             data.bill.Score = 100;
+            data.bill.GroupId = groupid;
 
             if (isPass)
             {
@@ -893,6 +982,7 @@ namespace ChartsWebApi.Controllers
             db.SaveChanges();
             if (isPass)
             {
+                exam.Id = groupid;
                 return Json(ResultInfo<Exam>.Success(exam));
             }
             return Json(ResultInfo<object>.Success(data));

@@ -9,6 +9,13 @@ namespace GetPDMObject
 {
     public class PDMUtils
     {
+        /// <summary>
+        /// 从本地数据库登录
+        /// </summary>
+        /// <param name="login"></param>
+        /// <param name="pwd"></param>
+        /// <param name="proname"></param>
+        /// <returns></returns>
         public static ResultInfo<XmlResultUserLogin> login(string login, string pwd, string proname)
         {
             XmlUser xmlUser = new XmlUser
@@ -18,6 +25,32 @@ namespace GetPDMObject
                 proname = proname
             };
             XmlDocument xmlDoc = OiEmData.Org_UserLogin(SerializeToXmlDocument(xmlUser) as XmlDocument);
+            XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
+            XmlResultUserLogin xmlResultUser = DeserializeXmlDocument(typeof(XmlResultUserLogin), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserLogin;
+            return new ResultInfo<XmlResultUserLogin>
+            {
+                code = xmlResult.recode,
+                msg = xmlResult.err,
+                obj = xmlResultUser
+            };
+        }
+
+        /// <summary>
+        /// 从国家平台登录
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="login"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static ResultInfo<XmlResultUserLogin> login(int id, string login, string name)
+        {
+            XmlUser xmlUser = new XmlUser
+            {
+                id = id,
+                login = login,
+                name = name
+            };
+            XmlDocument xmlDoc = OiEmData.Org_UserLoginCountry(SerializeToXmlDocument(xmlUser) as XmlDocument);
             XmlResult xmlResult = DeserializeXmlDocument(typeof(XmlResult), xmlDoc) as XmlResult;
             XmlResultUserLogin xmlResultUser = DeserializeXmlDocument(typeof(XmlResultUserLogin), (xmlResult.revalue as XmlNode[])[0]) as XmlResultUserLogin;
             return new ResultInfo<XmlResultUserLogin>

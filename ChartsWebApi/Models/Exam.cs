@@ -11,9 +11,6 @@ namespace ChartsWebApi.models
         public string Type { get; set; }
         public string BuildCode { get; set; }
         public string BuildName { get; set; }
-        public int BuildPartId { get; set; }
-        public string BuildPartCode { get; set; }
-        public string BuildPartName { get; set; }
         public string Model { get; set; }
         public string Status { get; set; }
         public DateTime TimeStart { get; set; }

@@ -21,9 +21,5 @@ namespace ChartsWebApi.models
 
         [NotMapped]
         public int[] PictureIds { get; set; }
-
-        [JsonIgnore]
-        [NotMapped]
-        public bool isMapped { get; set; }
     }
 }

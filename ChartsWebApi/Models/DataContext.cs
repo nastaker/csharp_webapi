@@ -22,6 +22,7 @@ namespace ChartsWebApi.models
         public virtual DbSet<BuildSurveyGroupTool> BuildSurveyGroupTool { get; set; }
         public virtual DbSet<BuildTool> BuildTool { get; set; }
         public virtual DbSet<Exam> Exam { get; set; }
+        public virtual DbSet<ExamPart> ExamPart { get; set; }
         public virtual DbSet<Exam01Bill> Exam01Bill { get; set; }
         public virtual DbSet<Exam01Bom> Exam01Bom { get; set; }
         public virtual DbSet<Exam01BomImg> Exam01BomImg { get; set; }
@@ -259,6 +260,11 @@ namespace ChartsWebApi.models
                     .HasMaxLength(64)
                     .IsUnicode(false);
 
+                entity.Property(e => e.Img)
+                    .HasColumnName("CN_TOOL_IMG_FULLNAME")
+                    .HasMaxLength(64)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Name)
                     .HasColumnName("CN_NAME")
                     .HasMaxLength(32)
@@ -280,7 +286,10 @@ namespace ChartsWebApi.models
                 entity.Property(e => e.Id).HasColumnName("CN_ID");
 
                 entity.Property(e => e.BuildId).HasColumnName("CN_BULID_ID");
-                
+
+                entity.Property(e => e.ImgBefore).HasColumnName("CN_BEFORE_FULL_NAME");
+                entity.Property(e => e.ImgAfter).HasColumnName("CN_AFTER_FULL_NAME");
+
                 entity.Property(e => e.Code)
                     .IsRequired()
                     .HasColumnName("CN_CODE")
@@ -325,7 +334,11 @@ namespace ChartsWebApi.models
 
                 entity.Property(e => e.Id).HasColumnName("CN_ID");
 
-                entity.Property(e => e.Count).HasColumnName("CN_COUNT");
+                entity.Property(e => e.Img).HasColumnName("CN_IMG_FULL_NAME");
+                entity.Property(e => e.ImgRotate).HasColumnName("CN_IMG_ROTATE");
+                entity.Property(e => e.PositionLeftTop).HasColumnName("CN_POSITION_LT");
+                entity.Property(e => e.PositionRightBottom).HasColumnName("CN_POSITION_RD");
+                entity.Property(e => e.RightAngle).HasColumnName("CN_ANGLE");
 
                 entity.Property(e => e.DtCreate)
                     .HasColumnName("CN_D_CREA")
@@ -432,26 +445,7 @@ namespace ChartsWebApi.models
                     .HasMaxLength(64)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
-
-
-                entity.Property(e => e.BuildPartId)
-                    .IsRequired()
-                    .HasColumnName("CN_Build_Part_Id");
-
-                entity.Property(e => e.BuildPartCode)
-                    .IsRequired()
-                    .HasColumnName("CN_Build_Part_Code")
-                    .HasMaxLength(32)
-                    .IsUnicode(false)
-                    .HasDefaultValueSql("('')");
-
-                entity.Property(e => e.BuildPartName)
-                    .IsRequired()
-                    .HasColumnName("CN_Build_Part_Name")
-                    .HasMaxLength(64)
-                    .IsUnicode(false)
-                    .HasDefaultValueSql("('')");
-
+                
                 entity.Property(e => e.Code)
                     .IsRequired()
                     .HasColumnName("CN_CODE")
@@ -544,6 +538,29 @@ namespace ChartsWebApi.models
                     .IsRequired()
                     .HasColumnName("CN_USER_NAME")
                     .HasMaxLength(32)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+            });
+
+            modelBuilder.Entity<ExamPart>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("TA_EXAM_PART");
+                entity.Property(e => e.Id).HasColumnName("CN_ID");
+                entity.Property(e => e.ExamId).HasColumnName("CN_EXAM_ID");
+                entity.Property(e => e.PartId).HasColumnName("CN_PART_ID");
+
+                entity.Property(e => e.PartCode)
+                    .IsRequired()
+                    .HasColumnName("CN_Part_Code")
+                    .HasMaxLength(64)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('')");
+
+                entity.Property(e => e.PartName)
+                    .IsRequired()
+                    .HasColumnName("CN_Part_Name")
+                    .HasMaxLength(64)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
             });
@@ -749,6 +766,7 @@ namespace ChartsWebApi.models
                 entity.ToTable("TA_EXAM02_BILL");
 
                 entity.Property(e => e.Id).HasColumnName("CN_ID");
+                entity.Property(e => e.GroupId).HasColumnName("CN_GROUP_ID");
 
                 entity.Property(e => e.SurveyId)
                       .IsRequired()

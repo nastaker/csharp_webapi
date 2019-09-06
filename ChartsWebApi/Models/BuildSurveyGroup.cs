@@ -13,6 +13,8 @@ namespace ChartsWebApi.models
         public string Code { get; set; }
         public string Name { get; set; }
         public string FullName { get; set; }
+        public string ImgBefore { get; set; }
+        public string ImgAfter { get; set; }
         public string Desc { get; set; }
         public DateTime DtCreate { get; set; }
         

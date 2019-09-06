@@ -16,4 +16,14 @@ namespace ChartsWebApi.Models
         //过期时间
         public int Expires { get; set; }
     }
+
+    public class XJwtSettings
+    {
+        public long IssueId { get; set; }
+        public string Secret { get; set; }
+        public string AesKey { get; set; }
+        public string Server { get; set; }
+        public string UrlSubmitScore { get; set; }
+        public string UserPad { get; set; }
+    }
 }

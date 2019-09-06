@@ -24,9 +24,5 @@ namespace ChartsWebApi.models
         public DateTime DtCreate { get; set; }
         public string Type { get; set; }
         public string Desc { get; set; }
-
-        [JsonIgnore]
-        [NotMapped]
-        public bool isMapped { get; set; }
     }
 }

@@ -37,4 +37,32 @@ namespace ChartsWebApi.ViewModel
         public List<BuildTool> tools { get; set; }
         public Exam02Bill bill { get; set; }
     }
+
+    public class TestResult
+    {
+        public string username { get; set; }
+        public string projectTitle { get; set; }
+        public string childProjectTitle { get; set; }
+        public int status { get; set; }
+        public decimal score { get; set; }
+        public long startDate { get; set; }
+        public long endDate { get; set; }
+        public int timeUsed { get; set; }
+        public int issuerId { get; set; }
+        public int attachmentId { get; set; }
+    }
+
+    public class TestSubmitResult
+    {
+        public int id { get; set; }
+        public int code { get; set; }
+        public string msg { get; set; }
+    }
+
+    public class GroupTool
+    {
+        public int GroupId { get; set; }
+        public int ToolId { get; set; }
+        public int Count { get; set; }
+    }
 }

@@ -50,11 +50,15 @@ namespace ChartsWebApi
                 options.MultipartHeadersLengthLimit = 1_074_790_400;
             });
 
-            //将appsettings.json中的JwtSettings部分的配置读取到JwtSettings中，这是给其他地方用的
+            //将appsettings.json中的JwtSettings部分的配置读取到JwtSettings中
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
+            services.Configure<XJwtSettings>(Configuration.GetSection("XJwtSettings"));
             //将配置绑定到JwtSettings实例中
             var jwtSettings = new JwtSettings();
             Configuration.Bind("JwtSettings", jwtSettings);
+            //将配置绑定到XJwtSettings
+            var xjwtSettings = new XJwtSettings();
+            Configuration.Bind("XJwtSettings", jwtSettings);
             //
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options => {

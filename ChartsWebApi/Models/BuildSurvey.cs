@@ -11,6 +11,7 @@ namespace ChartsWebApi.models
         public string Name { get; set; }
         public string Value { get; set; }
         public string FullName { get; set; }
+        public string Img { get; set; }
         public string Desc { get; set; }
         public DateTime DtCreate { get; set; }
     }

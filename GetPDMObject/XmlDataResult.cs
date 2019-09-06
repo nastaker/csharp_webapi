@@ -30,6 +30,15 @@ namespace GetPDMObject
             };
         }
 
+        public static ResultInfo<T> Success(string msg)
+        {
+            return new ResultInfo<T>
+            {
+                msg = msg,
+                code = "0"
+            };
+        }
+
         public static ResultInfo<T> Fail(string code, string msg)
         {
             return new ResultInfo<T>
@@ -200,6 +209,8 @@ namespace GetPDMObject
     [XmlRoot(ElementName = "USER")]
     public class XmlResultUserLogin
     {
+        [XmlAttribute("USERLOGIN")]
+        public string login { get; set; }
         [XmlAttribute("USERGUID")]
         public string userguid { get; set; }
         [XmlAttribute("USERNAME")]

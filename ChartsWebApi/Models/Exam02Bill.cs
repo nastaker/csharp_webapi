@@ -8,6 +8,7 @@ namespace ChartsWebApi.models
         public int Id { get; set; }
         public int ExamId { get; set; }
         public int SurveyId { get; set; }
+        public int? GroupId { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }

@@ -6,8 +6,12 @@ namespace GetPDMObject
     [XmlRoot("GET")]
     public class XmlUser
     {
+        [XmlElement("ID")]
+        public int id { get; set; }
         [XmlElement("LOGIN")]
         public string login { get; set; }
+        [XmlElement("NAME")]
+        public string name { get; set; }
         [XmlElement("PSW")]
         public string psw { get; set; }
         [XmlElement("PRONAME")]
