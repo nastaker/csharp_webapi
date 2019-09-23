@@ -174,7 +174,7 @@ namespace ilabHelper
             Array.Reverse(tmpb);            //【注意】C# 中和Java中顺序相反，原因参见102行
             long expires = BitConverter.ToInt64(tmpb, 0);
             //验证令牌时间是否过期
-            if (expires < now) { throw new Exception("Invalid token, expired——令牌过期"); }
+            if (expires < now) { throw new Exception(string.Format("令牌过期，过期时间：{0}，当前时间：{1}", Utils.ConvertJsDateToDate(expires), Utils.ConvertJsDateToDate(now))); }
 
             outbyte.Clear();
             int sl = data.LastIndexOf((char)DOT);

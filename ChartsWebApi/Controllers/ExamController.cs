@@ -1,14 +1,20 @@
 ﻿using ChartsWebApi.models;
+using ChartsWebApi.Models;
 using ChartsWebApi.ViewModel;
 using GetPDMObject;
+using ilabHelper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Web;
 
 namespace ChartsWebApi.Controllers
 {
@@ -18,14 +24,17 @@ namespace ChartsWebApi.Controllers
     public class ExamController : Controller
     {
         private DataContext db;
+        private XJwtSettings _xjwtSettings;
+
         private const string DICT_KEY_MAX_EXAM_COUNT = "MAXNUM";
         private const string DICT_KEY_EXAM_PART_COUNT = "PARTNUM";
 
         private readonly IHostingEnvironment _hostingEnvironment;
 
-        public ExamController(DataContext _db, IHostingEnvironment hostingEnvironment)
+        public ExamController(DataContext _db, IHostingEnvironment hostingEnvironment, IOptions<XJwtSettings> _jwtSettingsAccesser)
         {
             db = _db;
+            _xjwtSettings = _jwtSettingsAccesser.Value;
             _hostingEnvironment = hostingEnvironment;
         }
 
@@ -223,7 +232,8 @@ namespace ChartsWebApi.Controllers
         public ActionResult Mark(Exam01Bill bill)
         {
             bool final = false;
-            decimal? score = 0;
+            int score = 0;
+            string msg = "评卷完成";
             Exam exam = db.Exam.Where(e => e.Id == bill.ExamId).SingleOrDefault();
             // 判断是否在阅卷中，不是阅卷中不允许再阅卷了
             if (exam.Status != "阅卷中")
@@ -237,7 +247,12 @@ namespace ChartsWebApi.Controllers
             List<Exam01Bill> bills = db.Exam01Bill.Where(eb => eb.ExamId == bill.ExamId).ToList();
             //
             final = bills.Where(b => b.Score == null).Count() == 0;
-            score = bills.Sum(b => b.Score);
+            score = decimal.ToInt32(bills.Sum(b => b.Score ?? 0));
+            exam.Score = score;
+            if (!exam.TimeEnd.HasValue)
+            {
+                exam.TimeEnd = DateTime.Now;
+            }
             if (final)
             {
                 // 
@@ -257,6 +272,30 @@ namespace ChartsWebApi.Controllers
                 {
                     exam.Status = "不及格";
                 }
+                int userid = exam.UserId;
+                OrgUser orgUser = db.OrgUser.Where(u => u.Id == userid).FirstOrDefault();
+                // 上传成绩
+                if (orgUser.Login.EndsWith(_xjwtSettings.UserPad))
+                {
+                    TestSubmitResult r = SubmitScore(orgUser, exam);
+                    switch (r.code)
+                    {
+                        case 0:
+                            msg = msg + "。已成功提交成绩！";
+                            break;
+                        case 2:
+                            msg = msg + "。代码2：解密失败。";
+                            break;
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        default:
+                            msg = msg + "。代码" + r.code + "：" + r.msg;
+                            break;
+                    }
+                    
+                }
             }
             db.SaveChanges();
             // 判断是否已经全部评分了，如果全部评完，返回一个分数
@@ -264,8 +303,42 @@ namespace ChartsWebApi.Controllers
             {
                 final,
                 score,
-                msg = "评卷完成!"
+                msg
             }));
+        }
+
+        private TestSubmitResult SubmitScore(OrgUser orgUser, Exam exam)
+        {
+            // 只有实验空间的用户才上传成绩
+            long startDate = Utils.GetTimestamp(exam.TimeStart);
+            long endDate = Utils.GetTimestamp(exam.TimeEnd.Value);
+            int timeUsed = (int)(endDate - startDate) / 1000 / 60;
+            int score = decimal.ToInt32(exam.Score ?? 0);
+            if (timeUsed <= 0)
+            {
+                timeUsed = 1;
+            }
+            XlibUserScore userScore = new XlibUserScore
+            {
+                username = orgUser.Login.Replace(_xjwtSettings.UserPad, string.Empty),
+                projectTitle = _xjwtSettings.ExamName,
+                startDate = startDate,
+                endDate = endDate,
+                issuerId = _xjwtSettings.IssueId,
+                score = score,
+                status = exam.Status == "超时" ? 2 : 1,
+                timeUsed = timeUsed
+            };
+            string body = JsonConvert.SerializeObject(userScore);
+            XJWT xjwtObj = new XJWT(_xjwtSettings.Secret, _xjwtSettings.AesKey, _xjwtSettings.IssueId);
+            string token = xjwtObj.createToken(body, XJWT.Type.SYS, Utils.GetTimestamp());
+            string xjwt = HttpUtility.UrlEncode(token);
+            HttpClient client = new HttpClient();
+            string url = string.Format("{0}{1}?xjwt={2}", _xjwtSettings.Server, _xjwtSettings.UrlSubmitScore, xjwt);
+            client.Timeout = TimeSpan.FromSeconds(10);
+            var responseString = client.GetStringAsync(url);
+            string str = responseString.Result;
+            return JsonConvert.DeserializeObject<TestSubmitResult>(str);
         }
 
         [Route("getExam/{userguid}")]
@@ -276,7 +349,7 @@ namespace ChartsWebApi.Controllers
             {
                 return Json(ResultInfo<string>.Fail("0001", "用户信息错误"));
             }
-            OrgUser user = db.OrgUser.Where(ua => ua.Guid == userguid).SingleOrDefault();
+            OrgUser user = db.OrgUser.Where(ua => ua.Guid == userguid).FirstOrDefault();
             if (user == null)
             {
                 return Json(ResultInfo<string>.Fail("1001", "用户信息不存在"));
@@ -962,6 +1035,15 @@ namespace ChartsWebApi.Controllers
                 exam.Score = 0;
                 exam.Status = "不及格";
                 exam.TimeEnd = DateTime.Now;
+
+                // 提交成绩
+                OrgUser orgUser = db.OrgUser.Where(u => u.Id == exam.UserId).SingleOrDefault();
+                // 上传成绩
+                if (orgUser.Login.EndsWith(_xjwtSettings.UserPad))
+                {
+                    SubmitScore(orgUser, exam);
+                }
+
                 db.SaveChanges();
                 return Json(ResultInfo<Exam>.Success(exam));
             }
@@ -983,6 +1065,13 @@ namespace ChartsWebApi.Controllers
             if (isPass)
             {
                 exam.Id = groupid;
+                // 提交成绩
+                OrgUser orgUser = db.OrgUser.Where(u => u.Id == exam.UserId).SingleOrDefault();
+                // 上传成绩
+                if (orgUser.Login.EndsWith(_xjwtSettings.UserPad))
+                {
+                    SubmitScore(orgUser, exam);
+                }
                 return Json(ResultInfo<Exam>.Success(exam));
             }
             return Json(ResultInfo<object>.Success(data));

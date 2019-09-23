@@ -60,7 +60,7 @@ namespace GetPDMObject
                 obj = xmlResultUser
             };
         }
-
+        
         public static ResultInfo<XmlResultMessages> getMessage(XmlGet xmlget)
         {
             XmlDocument xmlDoc = OiProData.Pro_GetMsg(SerializeToXmlDocument(xmlget) as XmlDocument);

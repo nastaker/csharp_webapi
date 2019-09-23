@@ -23,6 +23,7 @@ namespace ChartsWebApi.Models
         public string Secret { get; set; }
         public string AesKey { get; set; }
         public string Server { get; set; }
+        public string ExamName { get; set; }
         public string UrlSubmitScore { get; set; }
         public string UserPad { get; set; }
     }

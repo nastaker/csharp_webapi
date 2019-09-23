@@ -64,7 +64,7 @@ namespace ilabHelper
         public static long GetTimestamp()
         {
             DateTime dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            return (DateTime.Now.Ticks - dt1970.Ticks) / 10000;
+            return (DateTime.UtcNow.Ticks - dt1970.Ticks) / 10000;
         }
 
 

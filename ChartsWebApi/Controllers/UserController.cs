@@ -80,16 +80,16 @@ namespace ChartsWebApi.Controllers
             {
                 timeUsed = 1;
             }
+            int score = decimal.ToInt32(exam.Score ?? 0);
             XlibUserScore userScore = new XlibUserScore
             {
                 username = orgUser.Login.Replace(_xjwtSettings.UserPad, string.Empty),
-                attachmentId = attachid,
                 projectTitle = exam.BuildName,
                 childProjectTitle = exam.BuildName,
                 startDate = startDate,
                 endDate = endDate,
                 issuerId = _xjwtSettings.IssueId,
-                score = exam.Score.Value,
+                score = score,
                 status = exam.Status == "超时" ? 2 : 1,
                 timeUsed = timeUsed
             };

@@ -29,11 +29,10 @@ namespace ChartsWebApi.ViewModel
         public string projectTitle { get; set; }
         public string childProjectTitle { get; set; }
         public int status { get; set; }
-        public decimal score { get; set; }
+        public int score { get; set; }
         public long startDate { get; set; }
         public long endDate { get; set; }
         public int timeUsed { get; set; }
         public long issuerId { get; set; }
-        public int? attachmentId { get; set; }
     }
 }
