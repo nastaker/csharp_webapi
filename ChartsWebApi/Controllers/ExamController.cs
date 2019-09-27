@@ -169,6 +169,7 @@ namespace ChartsWebApi.Controllers
             bill.Score = totalScore;
             exam.Score = bill.Score;
             exam.Status = "阅卷中";
+            exam.TimeEnd = DateTime.Now;
             db.Exam01Bom.AddRange(errors);
             db.SaveChanges();
             return Json(ResultInfo<string>.Success("您已成功交卷！"));
@@ -307,6 +308,19 @@ namespace ChartsWebApi.Controllers
             }));
         }
 
+        private string GetProjectType(string type)
+        {
+            switch(type)
+            {
+                case "测稿编绘":
+                    return "建筑观察分析与测稿编绘";
+                case "虚拟测量":
+                    return "建筑虚拟测量";
+                default:
+                    return string.Empty;
+            }
+        }
+
         private TestSubmitResult SubmitScore(OrgUser orgUser, Exam exam)
         {
             // 只有实验空间的用户才上传成绩
@@ -322,6 +336,7 @@ namespace ChartsWebApi.Controllers
             {
                 username = orgUser.Login.Replace(_xjwtSettings.UserPad, string.Empty),
                 projectTitle = _xjwtSettings.ExamName,
+                childProjectTitle = GetProjectType(exam.Type),
                 startDate = startDate,
                 endDate = endDate,
                 issuerId = _xjwtSettings.IssueId,

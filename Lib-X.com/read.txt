@@ -1,0 +1,10 @@
+#修改记录#
+
+En_Decryption.cs文件
+
+---AES_Decrypt----方法中
+
+将
+aesAlg.Padding = PaddingMode.PKCS7; 
+改为
+aesAlg.Padding = PaddingMode.None;

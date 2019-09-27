@@ -1,6 +1,7 @@
 ﻿/*
   作者：李大熊（602365214）
 */
+using ilabHelper;
 using System;
 using System.Text;
 
@@ -20,6 +21,7 @@ namespace ilabHelper
         private byte[] secret_key;//自定义
         private byte[] aesKey;
         private byte[] keySpec;
+        private byte[] iv;
         private long issueId;
         private Random rand;
         private byte[] sig = new byte[SIG_LENGTH];
@@ -56,7 +58,7 @@ namespace ilabHelper
                 if (aesKey.Length != AES_KEY_LENGTH) { throw new Exception("Aes key length must be 44"); }
                 secret_key = Encoding.UTF8.GetBytes(secret);
                 this.aesKey = Utils.Base64_Decode(Encoding.UTF8, aesKey);
-                byte[] iv = new byte[16];
+                iv = new byte[16];
                 for (int i = 0; i < iv.Length; i++) { iv[i] = this.aesKey[i]; }
                 keySpec = this.aesKey;
 
@@ -120,7 +122,7 @@ namespace ilabHelper
             try
             {
                 encrypted.Clear();//先清空，然后添加
-                encrypted.Put(Utils.AES_Encrypt(outbyte.ToArray(), aesKey));
+                encrypted.Put(Utils.AES_Encrypt(outbyte.ToArray(), aesKey, iv));
                 encrypted.Flip();
 
                 int len = encrypted.ToArray().Length;
@@ -133,13 +135,7 @@ namespace ilabHelper
             catch (Exception e) { throw e; }
         }
 
-        /// <summary>
-        /// 验证sign和header
-        /// </summary>
-        /// <param name="data">加密的字符串数据</param>
-        /// <param name="outbyte">输出ByteBuffer对象，传一个新的对象就行</param>
-        /// <param name="now">当前时间</param>
-        /// <returns></returns>
+        //验证sign和header
         public byte verify(string data, ByteBuffer outbyte, long now)
         {
             if (data == null) { throw new Exception("Input data is null——输入数据为空"); }
@@ -174,7 +170,7 @@ namespace ilabHelper
             Array.Reverse(tmpb);            //【注意】C# 中和Java中顺序相反，原因参见102行
             long expires = BitConverter.ToInt64(tmpb, 0);
             //验证令牌时间是否过期
-            if (expires < now) { throw new Exception(string.Format("令牌过期，过期时间：{0}，当前时间：{1}", Utils.ConvertJsDateToDate(expires), Utils.ConvertJsDateToDate(now))); }
+            if (expires < now) { throw new Exception("Invalid token, expired——令牌过期"); }
 
             outbyte.Clear();
             int sl = data.LastIndexOf((char)DOT);
@@ -198,7 +194,7 @@ namespace ilabHelper
             {
                 //对payload进行aes解码
                 byte[] payload = encrypted.ToArray();
-                byte[] destr = Utils.AES_Decrypt(payload, keySpec);
+                byte[] destr = Utils.AES_Decrypt(payload, keySpec, iv);
                 outbyte.Put(destr);
                 outbyte.Flip();
 

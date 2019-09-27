@@ -5,87 +5,14 @@ using System;
 using System.Web;
 using System.Security.Cryptography;//AES加密
 using System.Text;//Base64加密
-using System.Linq;
-using System.IO;
 
 /// <summary>
 /// ilab-x接口通信过程中用到的各类加密、解密方法的实现，AES(256)、Base64、SHA256
 /// </summary>
-namespace ilabHelper
+namespace RunScene.Web.ilabHelper
 {
-    public class Utils
+    public class En_Decryption
     {
-        #region 其他小工具
-
-        /// <summary>
-        /// 清除payload数据尾部补充字节
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static string Trim(string str)
-        {
-            int len = 0;
-            for (int i = 0; i < str.Length; i++)
-            {
-                if (str[i] < 16)
-                {
-                    len = i;
-                    break;
-                }
-            }
-            return str.Substring(0, len);
-        }
-        /// <summary>
-        /// 将Java、Js日期转为C#日期
-        /// </summary>
-        /// <param name="timestamp"></param>
-        /// <returns></returns>
-        public static DateTime ConvertJsDateToDate(long timestamp)
-        {
-            DateTime dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            long t = dt1970.Ticks + timestamp * 10000;
-            return new DateTime(t);
-        }
-
-        /// <summary>
-        /// 将C#日期转为Java、Js日期时间戳
-        /// </summary>
-        /// <param name="dateTime"></param>
-        /// <returns></returns>
-        public static long GetTimestamp(DateTime dateTime)
-        {
-            DateTime dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            return (dateTime.ToUniversalTime().Ticks - dt1970.Ticks) / 10000;
-        }
-        /// <summary>
-        /// 将C#日期转为Java、Js日期时间戳
-        /// </summary>
-        /// <returns></returns>
-        public static long GetTimestamp()
-        {
-            DateTime dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            return (DateTime.UtcNow.Ticks - dt1970.Ticks) / 10000;
-        }
-
-
-        private const string dict = "0123456789ABCDEF";
-        /// <summary>
-        /// 生成16字符长度的随机字符串
-        /// </summary>
-        /// <returns></returns>
-        public static string GetRandomString()
-        {
-            Random rand = new Random(unchecked((int)DateTime.Now.Ticks));
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 16; i++)
-            {
-                sb.Append(dict[rand.Next(16)]);
-            }
-            return sb.ToString();
-        }
-
-        #endregion
-
         #region AES 加密与解密
         /// <summary>
         /// AES 加密
@@ -135,9 +62,9 @@ namespace ilabHelper
                 aesAlg.Key = Key;
                 aesAlg.IV = IV;
 
-                // aesAlg.Padding = PaddingMode.PKCS7; 
+               // aesAlg.Padding = PaddingMode.PKCS7; 
 
-                aesAlg.Padding = PaddingMode.None;  // 此处Padding应该是这样
+				aesAlg.Padding = PaddingMode.None;  // 此处Padding应该是这样
 
                 aesAlg.Mode = CipherMode.CBC;
 
