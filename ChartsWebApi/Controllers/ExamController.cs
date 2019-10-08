@@ -38,12 +38,20 @@ namespace ChartsWebApi.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Route("getTestList")]
+        [HttpPost]
+        public ActionResult GetTestList()
+        {
+            List<Build> builds = db.Build.ToList();
+            return Json(ResultInfo<object>.Success(builds));
+        }
+
         [Route("getParts")]
         [HttpPost]
         public ActionResult GetParts()
         {
             List<BuildItem> buildItems = db.BuildItem.Where(bi => bi.IsPart == "Y").ToList();
-            return Json(ResultInfo<List<BuildItem>>.Success(buildItems));
+            return Json(ResultInfo<object>.Success(buildItems));
         }
 
         [Route("handIn")]
@@ -450,6 +458,7 @@ namespace ChartsWebApi.Controllers
             }
             // 提前建立BILL表数据
             List<Exam02Bill> bills = null;
+            List<BuildSurvey> buildSurveys = db.BuildSurvey.ToList();
             // 提前建立考试部位数据
             List<ExamPart> examParts = null;
             // 判断是否有正在进行中的
@@ -476,7 +485,8 @@ namespace ChartsWebApi.Controllers
                         return Json(ResultInfo<object>.Success(new
                         {
                             exam = examing[i],
-                            bills
+                            bills,
+                            buildSurveys
                         }));
                     }
                     else
@@ -619,7 +629,8 @@ namespace ChartsWebApi.Controllers
                 return Json(ResultInfo<object>.Success(new
                 {
                     exam,
-                    bills
+                    bills,
+                    buildSurveys
                 }));
             }
             else if (data.Type == "测稿编绘")

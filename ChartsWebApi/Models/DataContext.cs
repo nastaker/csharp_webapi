@@ -63,67 +63,73 @@ namespace ChartsWebApi.models
 
             modelBuilder.Entity<Build>(entity =>
             {
-                entity.HasKey(e => e.CnId);
+                entity.HasKey(e => e.Id);
 
                 entity.ToTable("TA_BULID");
 
-                entity.Property(e => e.CnId).HasColumnName("CN_ID");
+                entity.Property(e => e.Id).HasColumnName("CN_ID");
+                entity.Property(e => e.IsEnable).HasColumnName("CN_B_USE");
+                entity.Property(e => e.FaceImg).HasColumnName("CN_SHOW_IMG");
+                entity.Property(e => e.MapImg).HasColumnName("CN_IMG");
+                entity.Property(e => e.MapImgSelected).HasColumnName("CN_IMG_CHECK");
+                entity.Property(e => e.MapImgPositionLT).HasColumnName("CN_POSITION_LT");
+                entity.Property(e => e.MapImgPositionRB).HasColumnName("CN_POSITION_RD");
 
-                entity.Property(e => e.Cn3dFileDir)
+                entity.Property(e => e.FileDir)
                     .IsRequired()
                     .HasColumnName("CN_3D_FILE_DIR")
                     .HasMaxLength(64)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.Cn3dFileName)
+                entity.Property(e => e.FileName)
                     .IsRequired()
                     .HasColumnName("CN_3D_FILE_NAME")
                     .HasMaxLength(64)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.CnCode)
+                entity.Property(e => e.Code)
                     .IsRequired()
                     .HasColumnName("CN_CODE")
                     .HasMaxLength(32)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.CnDesc)
+                entity.Property(e => e.Desc)
                     .IsRequired()
                     .HasColumnName("CN_DESC")
                     .HasMaxLength(128)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.CnDtCreate)
+                entity.Property(e => e.DtCreate)
                     .HasColumnName("CN_DT_CREATE")
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.CnName)
+                entity.Property(e => e.Name)
                     .IsRequired()
                     .HasColumnName("CN_NAME")
                     .HasMaxLength(64)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.CnStatus)
+                entity.Property(e => e.Status)
                     .IsRequired()
                     .HasColumnName("CN_STATUS")
                     .HasMaxLength(10)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.CnSysNote)
+                entity.Property(e => e.SysNote)
                     .IsRequired()
                     .HasColumnName("CN_SYS_NOTE")
                     .HasMaxLength(128)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.CnType)
+                entity.Property(e => e.Type)
                     .IsRequired()
                     .HasColumnName("CN_TYPE")
                     .HasMaxLength(10)
@@ -239,6 +245,8 @@ namespace ChartsWebApi.models
                 entity.Property(e => e.Id).HasColumnName("CN_ID");
 
                 entity.Property(e => e.BuildId).HasColumnName("CN_BULID_ID");
+
+                entity.Property(e => e.Icon).HasColumnName("CN_SHOW_IMG");
 
                 entity.Property(e => e.Code)
                     .HasColumnName("CN_CODE")
