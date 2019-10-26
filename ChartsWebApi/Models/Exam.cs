@@ -9,6 +9,7 @@ namespace ChartsWebApi.models
         public string Code { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+        public int BuildId { get; set; }
         public string BuildCode { get; set; }
         public string BuildName { get; set; }
         public string Model { get; set; }

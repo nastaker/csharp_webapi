@@ -17,8 +17,8 @@ namespace ChartsWebApi.models
         public string MapImgSelected { get; set; }
         public string MapImgPositionLT { get; set; }
         public string MapImgPositionRB { get; set; }
-        public string FileName { get; set; }
-        public string FileDir { get; set; }
+        public string ModelName { get; set; }
+        public string ModelSrc { get; set; }
         public string Desc { get; set; }
         public string SysNote { get; set; }
     }

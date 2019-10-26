@@ -46,11 +46,15 @@ namespace ChartsWebApi.Controllers
             return Json(ResultInfo<object>.Success(builds));
         }
 
-        [Route("getParts")]
+        [Route("getParts/{buildId}")]
         [HttpPost]
-        public ActionResult GetParts()
+        public ActionResult GetParts(int buildId)
         {
-            List<BuildItem> buildItems = db.BuildItem.Where(bi => bi.IsPart == "Y").ToList();
+            if (buildId == 0)
+            {
+                return Json(ResultInfo<object>.Fail("1001", "请选择建筑！"));
+            }
+            List<BuildItem> buildItems = db.BuildItem.Where(bi => bi.IsPart == "Y" && bi.BuildId == buildId).ToList();
             return Json(ResultInfo<object>.Success(buildItems));
         }
 
@@ -403,9 +407,15 @@ namespace ChartsWebApi.Controllers
         {
             // 根据考试ID获取试卷信息
             Exam exam = db.Exam.Where(e => e.Id == examid).SingleOrDefault();
+            // 根据考试建筑ID获取地址
+            Build build = db.Build.Where(b => b.Id == exam.BuildId).SingleOrDefault();
             if (exam == null)
             {
                 return Json(ResultInfo<string>.Fail("1001", "获取考试信息失败"));
+            }
+            if (build == null)
+            {
+                return Json(ResultInfo<string>.Fail("1001", "获取建筑信息失败"));
             }
             if (exam.Type == "虚拟测量")
             {
@@ -418,15 +428,20 @@ namespace ChartsWebApi.Controllers
                     tools
                 }));
             }
-            else
+            else if (exam.Type == "测稿编绘")
             {
                 List<Exam01Bill> bills = db.Exam01Bill.Where(eb => eb.ExamId == exam.Id).ToList();
                 // 未超时，将此条记录直接返回
                 return Json(ResultInfo<object>.Success(new
                 {
                     exam,
-                    bills
+                    bills,
+                    modelSrc = build.ModelSrc
                 }));
+            }
+            else
+            {
+                return Json(ResultInfo<string>.Fail("1001", "获取考试类型失败"));
             }
         }
 
@@ -440,8 +455,11 @@ namespace ChartsWebApi.Controllers
             {
                 return Json(ResultInfo<string>.Fail("1001", "获取用户信息失败"));
             }
-            // 查询所有考试类型
-            List<BuildItem> buildItem = db.BuildItem.Where(bi => bi.IsPart == "Y").ToList();
+            Build build = db.Build.Where(b => b.Id == data.buildId).FirstOrDefault();
+            if (build == null && data.Type == "测稿编绘")
+            {
+                return Json(ResultInfo<string>.Fail("2001", "获取建筑信息失败"));
+            }
             // 根据用户id查询已经考过的试
             IEnumerable<Exam> examed = db.Exam.Where(ea => ea.Type == data.Type && ea.UserId == user.Id && ea.Status != "作废");
             // 获取最大考试次数
@@ -479,7 +497,17 @@ namespace ChartsWebApi.Controllers
                 else
                 {
                     examing[i].TimeEnd = examing[i].TimeStart.AddMinutes(time);
-                    if (examing[i].Type == "虚拟测量")
+                    if (examing[i].Type == "测稿编绘")
+                    {
+                        examParts = db.ExamPart.Where(ep => ep.ExamId == examing[i].Id).ToList();
+                        return Json(ResultInfo<object>.Success(new
+                        {
+                            exam = examing[i],
+                            examParts,
+                            modelSrc = build.ModelSrc
+                        }));
+                    }
+                    else if(examing[i].Type == "虚拟测量")
                     {
                         bills = db.Exam02Bill.Where(eb => eb.ExamId == examing[i].Id).ToList();
                         return Json(ResultInfo<object>.Success(new
@@ -487,16 +515,6 @@ namespace ChartsWebApi.Controllers
                             exam = examing[i],
                             bills,
                             buildSurveys
-                        }));
-                    }
-                    else
-                    {
-                        // 未超时，将此条记录直接返回
-                        examParts = db.ExamPart.Where(ep => ep.ExamId == examing[i].Id).ToList();
-                        return Json(ResultInfo<object>.Success(new
-                        {
-                            exam = examing[i],
-                            examParts
                         }));
                     }
                 }
@@ -510,6 +528,7 @@ namespace ChartsWebApi.Controllers
             // 新建Exam数据
             Exam exam = new Exam
             {
+                BuildId = data.buildId,
                 Type = data.Type,
                 Model = "A",
                 Status = "进行中",
@@ -521,34 +540,32 @@ namespace ChartsWebApi.Controllers
             examParts = new List<ExamPart>();
             if (data.Type == "测稿编绘")
             {
+                List<BuildItem> buildItems = db.BuildItem.Where(bi => bi.IsPart == "Y" && bi.BuildId == build.Id).ToList();
                 // 如果是测稿编绘，必须要有题目，如果没有题目考试不进行创建
-                if (buildItem.Count == 0)
+                if (buildItems.Count == 0)
                 {
                     return Json(ResultInfo<string>.Fail("1002", "没有获取到考试题目，请联系管理员。"));
                 }
-            }
-            // 可以新建出考试了
-            db.Exam.Add(exam);
-            db.SaveChanges();
-            if (data.Type == "测稿编绘")
-            {
+                // 可以新建出考试了
+                db.Exam.Add(exam);
+                db.SaveChanges();
                 // 随机挑选其中DICT_KEY_EXAM_PART_NUM个，新建数据到ExamPart表
                 int partCount = GetExamPartCount();
                 for (int i = 0; i < partCount; i++)
                 {
                     // 随机其中的任意部件
-                    int index = new Random().Next(buildItem.Count);
-                    BuildItem build = buildItem[index];
+                    int index = new Random().Next(buildItems.Count);
+                    BuildItem buildItem = buildItems[index];
                     // 将选取的部件添加到examParts
                     examParts.Add(new ExamPart
                     {
                         ExamId = exam.Id,
-                        PartId = build.Id,
-                        PartCode = build.Code,
-                        PartName = build.Name
+                        PartId = buildItem.Id,
+                        PartCode = buildItem.Code,
+                        PartName = buildItem.Name
                     });
                     // 从build_item_list中移除这个部件
-                    buildItem.Remove(build);
+                    buildItems.Remove(buildItem);
                 }
                 // 添加EXAM_01_BILL表数据：01 构建表，02 虚拟照片，03 草图绘制
                 List<Exam01Bill> exam01Bills = new List<Exam01Bill>();
@@ -577,6 +594,9 @@ namespace ChartsWebApi.Controllers
             }
             else if (data.Type == "虚拟测量")
             {
+                // 可以新建出考试了
+                db.Exam.Add(exam);
+                db.SaveChanges();
                 // 获取SURVEY表数据
                 List<BuildSurvey> surveys = db.BuildSurvey.ToList();
                 for (int i = 0, j = surveys.Count; i < j; i++)
@@ -638,7 +658,8 @@ namespace ChartsWebApi.Controllers
                 return Json(ResultInfo<object>.Success(new
                 {
                     exam,
-                    examParts
+                    examParts,
+                    modelSrc = build.ModelSrc
                 }));
             }
             else

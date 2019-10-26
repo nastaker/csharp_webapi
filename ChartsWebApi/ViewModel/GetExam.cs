@@ -10,6 +10,7 @@ namespace ChartsWebApi.ViewModel
     {
         public string userguid { get; set; }
         public string Type { get; set; }
+        public int buildId { get; set; }
         public List<OrgUser> GroupUsers { get; set; }
     }
 

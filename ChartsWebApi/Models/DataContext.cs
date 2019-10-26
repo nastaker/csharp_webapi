@@ -75,14 +75,14 @@ namespace ChartsWebApi.models
                 entity.Property(e => e.MapImgPositionLT).HasColumnName("CN_POSITION_LT");
                 entity.Property(e => e.MapImgPositionRB).HasColumnName("CN_POSITION_RD");
 
-                entity.Property(e => e.FileDir)
+                entity.Property(e => e.ModelSrc)
                     .IsRequired()
                     .HasColumnName("CN_3D_FILE_DIR")
                     .HasMaxLength(64)
                     .IsUnicode(false)
                     .HasDefaultValueSql("('')");
 
-                entity.Property(e => e.FileName)
+                entity.Property(e => e.ModelName)
                     .IsRequired()
                     .HasColumnName("CN_3D_FILE_NAME")
                     .HasMaxLength(64)
@@ -439,6 +439,8 @@ namespace ChartsWebApi.models
                 entity.ToTable("TA_EXAM");
 
                 entity.Property(e => e.Id).HasColumnName("CN_ID");
+
+                entity.Property(e => e.BuildId).HasColumnName("CN_Bulid_ID");
 
                 entity.Property(e => e.BuildCode)
                     .IsRequired()
